@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Upload, FileSpreadsheet, CheckCircle, AlertCircle, Info, Loader } from 'lucide-react';
+import { Upload, FileSpreadsheet, FileText, CheckCircle, AlertCircle, Info, Loader } from 'lucide-react';
 import DashboardLayout from '../components/common/DashboardLayout';
 import FileUpload from '../components/students/FileUpload';
 import { useToast } from '../context/ToastContext';
@@ -225,10 +225,39 @@ function UploadPage() {
               <div className="space-y-4 text-sm text-gray-600 dark:text-gray-400">
                 <div>
                   <h4 className="font-medium text-gray-800 dark:text-gray-200 mb-1.5">Accepted Formats</h4>
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap gap-2 mb-4">
                     <span className="px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 text-xs font-medium">.xlsx</span>
                     <span className="px-2.5 py-1 rounded-lg bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 text-xs font-medium">.csv</span>
                     <span className="px-2.5 py-1 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 text-xs font-medium">.pdf</span>
+                  </div>
+                </div>
+                <div>
+                  <h4 className="font-medium text-gray-800 dark:text-gray-200 mb-1.5">Download Templates</h4>
+                  <div className="flex flex-col gap-2.5 p-3 rounded-xl bg-gray-50/50 dark:bg-primary-950/20 border border-gray-200/50 dark:border-primary-400/5">
+                    <a
+                      href="/sample-students.xlsx"
+                      download="sample-students.xlsx"
+                      className="flex items-center gap-2 text-xs font-medium text-primary-600 dark:text-primary-400 hover:underline transition-colors"
+                    >
+                      <FileSpreadsheet className="w-4 h-4 text-emerald-500" />
+                      Sample Excel Template (.xlsx)
+                    </a>
+                    <a
+                      href="/sample-students.csv"
+                      download="sample-students.csv"
+                      className="flex items-center gap-2 text-xs font-medium text-primary-600 dark:text-primary-400 hover:underline transition-colors"
+                    >
+                      <FileSpreadsheet className="w-4 h-4 text-blue-500" />
+                      Sample CSV Template (.csv)
+                    </a>
+                    <a
+                      href="/sample-students.pdf"
+                      download="sample-students.pdf"
+                      className="flex items-center gap-2 text-xs font-medium text-primary-600 dark:text-primary-400 hover:underline transition-colors"
+                    >
+                      <FileText className="w-4 h-4 text-red-500" />
+                      Sample PDF Template (.pdf)
+                    </a>
                   </div>
                 </div>
                 <div>

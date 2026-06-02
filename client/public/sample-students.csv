@@ -1,0 +1,6 @@
+hallTicketNumber,name,rank,department,studentPhone,parentPhone,email,category,gender,region
+9876543210,Aarav Sharma,1250,CSE,9999999901,8888888801,aarav.sharma@example.com,OC,Male,AU
+9876543211,Kavya Reddy,2340,ECE,9999999902,8888888802,kavya.reddy@example.com,BC-B,Female,AU
+9876543212,Sai Kiran,4510,INF,9999999903,8888888803,sai.kiran@example.com,BC-D,Male,SVU
+9876543213,Ananya Verma,820,CSE,9999999904,8888888804,ananya.v@example.com,OC,Female,OU
+9876543214,Rahul Naik,15320,MEC,9999999905,8888888805,rahul.naik@example.com,ST,Male,AU

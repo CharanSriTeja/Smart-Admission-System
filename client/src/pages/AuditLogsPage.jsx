@@ -44,7 +44,11 @@ function AuditLogsPage() {
       const data = res.data;
       setLogs(data.logs || data.data || []);
       if (data.pagination) {
-        setPagination(prev => ({ ...prev, ...data.pagination }));
+        setPagination(prev => ({
+          ...prev,
+          ...data.pagination,
+          totalPages: data.pagination.pages || data.pagination.totalPages || Math.ceil(data.pagination.total / data.pagination.limit),
+        }));
       } else if (data.total !== undefined) {
         setPagination(prev => ({
           ...prev,

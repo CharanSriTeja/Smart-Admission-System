@@ -31,7 +31,9 @@
     "mongoose": "^8.6.0",
     "morgan": "^1.10.0",
     "multer": "^1.4.5-lts.1",
+    "pdf-lib": "^1.17.1",
     "pdf-parse": "^1.1.1",
+    "pdfjs-dist": "^6.0.227",
     "socket.io": "^4.7.5",
     "xlsx": "^0.18.5"
   },

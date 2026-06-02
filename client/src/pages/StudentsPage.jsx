@@ -64,7 +64,11 @@ function StudentsPage() {
       const data = res.data;
       setStudents(data.students || data.data || []);
       if (data.pagination) {
-        setPagination(prev => ({ ...prev, ...data.pagination }));
+        setPagination(prev => ({
+          ...prev,
+          ...data.pagination,
+          totalPages: data.pagination.pages || data.pagination.totalPages || Math.ceil(data.pagination.total / data.pagination.limit),
+        }));
       } else if (data.total !== undefined) {
         setPagination(prev => ({
           ...prev,
@@ -137,6 +141,14 @@ function StudentsPage() {
     if (newPage >= 1 && newPage <= pagination.totalPages) {
       setPagination(prev => ({ ...prev, page: newPage }));
     }
+  };
+
+  const handleLimitChange = (newLimit) => {
+    setPagination(prev => ({
+      ...prev,
+      limit: parseInt(newLimit, 10),
+      page: 1,
+    }));
   };
 
   const handleExportStudentsExcel = async () => {
@@ -290,11 +302,12 @@ function StudentsPage() {
             </button>
           </div>
         </div>
+      </div>
 
-        {/* Search & Filters */}
-        <div className="mb-6">
-          <StudentSearch onSearch={handleSearch} onFilter={handleFilter} filters={filters} />
-        </div>
+      {/* Search & Filters */}
+      <div className="mb-6">
+        <StudentSearch onSearch={handleSearch} onFilter={handleFilter} filters={filters} />
+      </div>
 
         {/* Content */}
         {loading ? (
@@ -333,59 +346,76 @@ function StudentsPage() {
         )}
 
         {/* Pagination */}
-        {pagination.totalPages > 1 && (
-          <div className="flex items-center justify-between mt-6">
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              Page {pagination.page} of {pagination.totalPages}
-              {pagination.total > 0 && ` · ${pagination.total} total students`}
-            </p>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => handlePageChange(pagination.page - 1)}
-                disabled={pagination.page <= 1}
-                className="flex items-center gap-1 px-3 py-2 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-white/5 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                <ChevronLeft className="w-4 h-4" />
-                Previous
-              </button>
-              <div className="flex items-center gap-1">
-                {Array.from({ length: Math.min(pagination.totalPages, 7) }, (_, i) => {
-                  let page;
-                  if (pagination.totalPages <= 7) {
-                    page = i + 1;
-                  } else if (pagination.page <= 4) {
-                    page = i + 1;
-                  } else if (pagination.page >= pagination.totalPages - 3) {
-                    page = pagination.totalPages - 6 + i;
-                  } else {
-                    page = pagination.page - 3 + i;
-                  }
-                  return (
-                    <button
-                      key={page}
-                      onClick={() => handlePageChange(page)}
-                      className={`w-9 h-9 rounded-xl text-sm font-medium transition-all duration-200 ${pagination.page === page
-                        ? 'bg-primary-500 text-white shadow-md shadow-primary-500/25'
-                        : 'text-gray-600 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-white/5'
-                        }`}
-                    >
-                      {page}
-                    </button>
-                  );
-                })}
+        {pagination.total > 0 && (
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mt-6">
+            <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
+              <span>
+                Page {pagination.page} of {pagination.totalPages || 1}
+                {pagination.total > 0 && ` · ${pagination.total} total students`}
+              </span>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-gray-400 uppercase font-semibold">Show:</span>
+                <select
+                  value={pagination.limit}
+                  onChange={(e) => handleLimitChange(e.target.value)}
+                  className="bg-white/80 dark:bg-primary-950/40 backdrop-blur-md border border-gray-200 dark:border-primary-400/10 rounded-xl px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-400/20 transition-all duration-200"
+                >
+                  <option value={10}>10 per page</option>
+                  <option value={30}>30 per page</option>
+                  <option value={50}>50 per page</option>
+                  <option value={100}>100 per page</option>
+                </select>
               </div>
-              <button
-                onClick={() => handlePageChange(pagination.page + 1)}
-                disabled={pagination.page >= pagination.totalPages}
-                className="flex items-center gap-1 px-3 py-2 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-white/5 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                Next
-                <ChevronRight className="w-4 h-4" />
-              </button>
             </div>
+
+            {pagination.totalPages > 1 && (
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => handlePageChange(pagination.page - 1)}
+                  disabled={pagination.page <= 1}
+                  className="flex items-center gap-1 px-3 py-2 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-white/5 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                  Previous
+                </button>
+                <div className="flex items-center gap-1">
+                  {Array.from({ length: Math.min(pagination.totalPages, 7) }, (_, i) => {
+                    let page;
+                    if (pagination.totalPages <= 7) {
+                      page = i + 1;
+                    } else if (pagination.page <= 4) {
+                      page = i + 1;
+                    } else if (pagination.page >= pagination.totalPages - 3) {
+                      page = pagination.totalPages - 6 + i;
+                    } else {
+                      page = pagination.page - 3 + i;
+                    }
+                    return (
+                      <button
+                        key={page}
+                        onClick={() => handlePageChange(page)}
+                        className={`w-9 h-9 rounded-xl text-sm font-medium transition-all duration-200 ${pagination.page === page
+                          ? 'bg-primary-500 text-white shadow-md shadow-primary-500/25'
+                          : 'text-gray-600 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-white/5'
+                          }`}
+                      >
+                        {page}
+                      </button>
+                    );
+                  })}
+                </div>
+                <button
+                  onClick={() => handlePageChange(pagination.page + 1)}
+                  disabled={pagination.page >= pagination.totalPages}
+                  className="flex items-center gap-1 px-3 py-2 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-white/5 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  Next
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            )}
           </div>
         )}
-      </div>
     </DashboardLayout>
   );
 }

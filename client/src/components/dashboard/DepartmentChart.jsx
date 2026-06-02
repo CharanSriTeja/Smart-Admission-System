@@ -70,7 +70,10 @@ function DepartmentChart({ data = [] }) {
               axisLine={false}
               tickLine={false}
             />
-            <Tooltip content={<CustomTooltip />} />
+            <Tooltip
+              content={<CustomTooltip />}
+              cursor={{ fill: darkMode ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.03)' }}
+            />
             <Legend
               wrapperStyle={{ paddingTop: 16 }}
               iconType="circle"

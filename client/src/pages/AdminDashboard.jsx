@@ -50,6 +50,16 @@ function AdminDashboard() {
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [userToDelete, setUserToDelete] = useState(null);
 
+  // Clear Database state
+  const [showClearModal, setShowClearModal] = useState(false);
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [isCheckboxChecked, setIsCheckboxChecked] = useState(false);
+  const [isClearingDb, setIsClearingDb] = useState(false);
+  const [clearScope, setClearScope] = useState('all');
+  const [clearDate, setClearDate] = useState('');
+  const [clearStartTime, setClearStartTime] = useState('');
+  const [clearEndTime, setClearEndTime] = useState('');
+
   // Redirect if logged in but not as admin (e.g. HOD or Volunteer)
   useEffect(() => {
     if (isAuthenticated && user && user.role !== 'admin') {
@@ -163,6 +173,55 @@ function AdminDashboard() {
     setShowConfirmModal(true);
   };
 
+  // Handle Clearing Database
+  const handleClearDatabase = async () => {
+    if (!isCheckboxChecked || !confirmPassword) return;
+    if (clearScope === 'date' && !clearDate) {
+      addToast('error', 'Please select a date.');
+      return;
+    }
+    if (clearScope === 'time') {
+      if (!clearStartTime || !clearEndTime) {
+        addToast('error', 'Please select both start and end date/time.');
+        return;
+      }
+      if (new Date(clearStartTime) >= new Date(clearEndTime)) {
+        addToast('error', 'Start time must be before end time.');
+        return;
+      }
+    }
+    setIsClearingDb(true);
+    try {
+      const payload = { 
+        password: confirmPassword,
+        scope: clearScope
+      };
+      if (clearScope === 'date') {
+        payload.date = clearDate;
+      } else if (clearScope === 'time') {
+        payload.startTime = clearStartTime;
+        payload.endTime = clearEndTime;
+      }
+
+      const response = await api.delete('/admin/students/clear', {
+        data: payload
+      });
+      addToast('success', response.data.message || 'Database cleared successfully.');
+      setShowClearModal(false);
+      setConfirmPassword('');
+      setIsCheckboxChecked(false);
+      setClearScope('all');
+      setClearDate('');
+      setClearStartTime('');
+      setClearEndTime('');
+    } catch (error) {
+      const msg = error.response?.data?.message || 'Verification failed. Database not cleared.';
+      addToast('error', msg);
+    } finally {
+      setIsClearingDb(false);
+    }
+  };
+
   // Helper: Generate a strong random password
   const generatePassword = () => {
     const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*';
@@ -212,7 +271,7 @@ function AdminDashboard() {
                     type="email"
                     value={adminEmail}
                     onChange={(e) => setAdminEmail(e.target.value)}
-                    placeholder="admin@college.edu"
+                    placeholder="[EMAIL_ADDRESS]"
                     className="w-full bg-slate-950/60 border border-slate-800 rounded-xl px-4 py-3.5 pl-12 text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all duration-300"
                   />
                 </div>
@@ -360,22 +419,20 @@ function AdminDashboard() {
                   <button
                     type="button"
                     onClick={() => setRole('Volunteer')}
-                    className={`py-2.5 rounded-xl border text-sm font-semibold transition-all duration-300 ${
-                      role === 'Volunteer'
-                        ? 'bg-primary-500/10 border-primary-500 text-primary-300 shadow-sm'
-                        : 'bg-transparent border-slate-800 text-slate-400 hover:border-slate-700'
-                    }`}
+                    className={`py-2.5 rounded-xl border text-sm font-semibold transition-all duration-300 ${role === 'Volunteer'
+                      ? 'bg-primary-500/10 border-primary-500 text-primary-300 shadow-sm'
+                      : 'bg-transparent border-slate-800 text-slate-400 hover:border-slate-700'
+                      }`}
                   >
                     Volunteer
                   </button>
                   <button
                     type="button"
                     onClick={() => setRole('HOD')}
-                    className={`py-2.5 rounded-xl border text-sm font-semibold transition-all duration-300 ${
-                      role === 'HOD'
-                        ? 'bg-primary-500/10 border-primary-500 text-primary-300 shadow-sm'
-                        : 'bg-transparent border-slate-800 text-slate-400 hover:border-slate-700'
-                    }`}
+                    className={`py-2.5 rounded-xl border text-sm font-semibold transition-all duration-300 ${role === 'HOD'
+                      ? 'bg-primary-500/10 border-primary-500 text-primary-300 shadow-sm'
+                      : 'bg-transparent border-slate-800 text-slate-400 hover:border-slate-700'
+                      }`}
                   >
                     HOD
                   </button>
@@ -612,13 +669,35 @@ function AdminDashboard() {
             </div>
           </div>
         </section>
+
+        {/* System Administration / Reset Database Card */}
+        <section className="glass-card p-6 sm:p-8 border border-red-500/20 space-y-4">
+          <div>
+            <h2 className="text-xl font-bold text-white flex items-center gap-2">
+              <Trash2 className="w-5.5 h-5.5 text-red-500" />
+              Reset Admission Database
+            </h2>
+            <p className="text-sm text-slate-400 mt-1">
+              Clear all student admission records and system audit logs to prepare the system for the next counseling cycle.
+            </p>
+          </div>
+          <div className="pt-2">
+            <button
+              onClick={() => setShowClearModal(true)}
+              className="px-6 py-3 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 hover:border-red-500/50 text-sm font-semibold transition-all duration-300 flex items-center gap-2"
+            >
+              <Trash2 className="w-4.5 h-4.5" />
+              Clear Student Database
+            </button>
+          </div>
+        </section>
       </main>
 
       {/* Confirmation Modal */}
       {showConfirmModal && userToDelete && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           {/* Backdrop */}
-          <div 
+          <div
             className="absolute inset-0 bg-slate-950/60 backdrop-blur-sm"
             onClick={() => {
               setShowConfirmModal(false);
@@ -662,6 +741,175 @@ function AdminDashboard() {
                 className="flex-1 py-3 rounded-xl bg-gradient-to-r from-red-650 to-red-550 hover:from-red-600 hover:to-red-500 text-white font-semibold text-sm shadow-lg shadow-red-500/10 hover:shadow-red-500/20 transition-all duration-300"
               >
                 Confirm Revoke
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Clear Database Confirmation Modal */}
+      {showClearModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-slate-950/60 backdrop-blur-sm"
+            onClick={() => {
+              if (!isClearingDb) {
+                setShowClearModal(false);
+                setConfirmPassword('');
+                setIsCheckboxChecked(false);
+                setClearScope('all');
+                setClearDate('');
+                setClearStartTime('');
+                setClearEndTime('');
+              }
+            }}
+          />
+          {/* Modal Content */}
+          <div className="relative z-10 w-full max-w-md glass-card border border-red-500/30 p-6 sm:p-8 space-y-6 shadow-2xl animate-scale-in">
+            <div className="text-center space-y-4">
+              <div className="w-14 h-14 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center mx-auto text-red-500">
+                <Trash2 className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-white">Reset System Database</h3>
+                <p className="text-sm text-slate-400 mt-2">
+                  This action will <span className="text-red-400 font-semibold">permanently delete all student records</span> and their corresponding audit trail history from the system.
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-4 pt-2">
+              {/* Reset Scope Selector */}
+              <div className="space-y-1.5 text-left">
+                <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider">
+                  Reset Scope
+                </label>
+                <select
+                  value={clearScope}
+                  onChange={(e) => setClearScope(e.target.value)}
+                  className="w-full bg-slate-950/60 border border-slate-800 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-red-500 focus:ring-2 focus:ring-red-500/20 transition-all duration-300 text-sm"
+                  disabled={isClearingDb}
+                >
+                  <option value="all">All Student Records (Global Reset)</option>
+                  <option value="date">Date-Based Deletion</option>
+                  <option value="time">Time-Based Deletion (Custom Range)</option>
+                </select>
+              </div>
+
+              {/* Conditionally Render Date Picker */}
+              {clearScope === 'date' && (
+                <div className="space-y-1.5 text-left animate-slide-down">
+                  <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider">
+                    Select Date
+                  </label>
+                  <input
+                    type="date"
+                    value={clearDate}
+                    onChange={(e) => setClearDate(e.target.value)}
+                    className="w-full bg-slate-950/60 border border-slate-800 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-red-500 focus:ring-2 focus:ring-red-500/20 transition-all duration-300 text-sm"
+                    disabled={isClearingDb}
+                    required
+                  />
+                </div>
+              )}
+
+              {/* Conditionally Render Time Range Picker */}
+              {clearScope === 'time' && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-left animate-slide-down">
+                  <div className="space-y-1.5">
+                    <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider">
+                      Start Date & Time
+                    </label>
+                    <input
+                      type="datetime-local"
+                      value={clearStartTime}
+                      onChange={(e) => setClearStartTime(e.target.value)}
+                      className="w-full bg-slate-950/60 border border-slate-800 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-red-500 focus:ring-2 focus:ring-red-500/20 transition-all duration-300 text-sm"
+                      disabled={isClearingDb}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider">
+                      End Date & Time
+                    </label>
+                    <input
+                      type="datetime-local"
+                      value={clearEndTime}
+                      onChange={(e) => setClearEndTime(e.target.value)}
+                      className="w-full bg-slate-950/60 border border-slate-800 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-red-500 focus:ring-2 focus:ring-red-500/20 transition-all duration-300 text-sm"
+                      disabled={isClearingDb}
+                      required
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Checkbox confirmation */}
+              <label className="flex items-start gap-3 cursor-pointer group text-left">
+                <input
+                  type="checkbox"
+                  checked={isCheckboxChecked}
+                  onChange={(e) => setIsCheckboxChecked(e.target.checked)}
+                  className="mt-1 w-4 h-4 rounded border-slate-800 text-red-600 focus:ring-red-500 focus:ring-opacity-25 bg-slate-950"
+                  disabled={isClearingDb}
+                />
+                <span className="text-xs text-slate-400 group-hover:text-slate-300 transition-colors">
+                  I understand that this action is irreversible and all active admission tracking data will be lost forever.
+                </span>
+              </label>
+
+              {/* Password Re-entry */}
+              <div className="space-y-1.5">
+                <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider text-left">
+                  Re-enter Password
+                </label>
+                <div className="relative">
+                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-slate-400" />
+                  <input
+                    type="password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="Enter your admin password"
+                    className="w-full bg-slate-950/60 border border-slate-800 rounded-xl px-4 py-3 pl-12 text-white placeholder-slate-650 focus:outline-none focus:border-red-500 focus:ring-2 focus:ring-red-500/20 transition-all duration-300 text-sm"
+                    disabled={isClearingDb}
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowClearModal(false);
+                  setConfirmPassword('');
+                  setIsCheckboxChecked(false);
+                  setClearScope('all');
+                  setClearDate('');
+                  setClearStartTime('');
+                  setClearEndTime('');
+                }}
+                disabled={isClearingDb}
+                className="flex-1 py-3 rounded-xl border border-white/10 hover:bg-white/5 text-slate-300 font-semibold text-sm transition-all duration-200 disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleClearDatabase}
+                disabled={!isCheckboxChecked || !confirmPassword || isClearingDb}
+                className="flex-1 py-3 rounded-xl bg-gradient-to-r from-red-650 to-red-550 hover:from-red-600 hover:to-red-500 text-white font-semibold text-sm shadow-lg shadow-red-500/10 hover:shadow-red-500/20 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isClearingDb ? (
+                  <span className="flex items-center justify-center gap-1.5">
+                    <Loader className="w-4 h-4 animate-spin" />
+                    Clearing...
+                  </span>
+                ) : (
+                  'Yes, Reset System'
+                )}
               </button>
             </div>
           </div>

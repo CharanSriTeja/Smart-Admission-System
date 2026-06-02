@@ -9,7 +9,7 @@ import fs from 'fs';
 import path from 'path';
 import * as XLSX from 'xlsx';
 import csvParser from 'csv-parser';
-import pdfParse from 'pdf-parse';
+import * as pdfjsLib from 'pdfjs-dist/legacy/build/pdf.mjs';
 
 // ── Column-name aliases ──────────────────────────────────────────────────────
 // Maps every known column alias (lowercased) → canonical field name.
@@ -184,44 +184,128 @@ const parseCsv = (filePath) => {
 };
 
 /**
- * Best-effort parser for tabular data inside a PDF.
- * Many PDFs do not contain machine-readable tables, so this is heuristic.
+ * Robust parser for tabular data inside a PDF using pdfjs-dist.
+ * Groups text fragments into rows and columns based on their visual coordinate offsets,
+ * then identifies the header row (containing at least 3 mandatory fields) to parse data rows.
  * @param {string} filePath - Absolute path to the .pdf file.
  * @returns {Promise<Object[]>} Array of student objects (may be empty).
  */
 const parsePdf = async (filePath) => {
-  const dataBuffer = fs.readFileSync(filePath);
-  const pdfData = await pdfParse(dataBuffer);
-  const text = pdfData.text;
-
-  if (!text || !text.trim()) return [];
-
-  const lines = text
-    .split('\n')
-    .map((l) => l.trim())
-    .filter(Boolean);
-
-  if (lines.length < 2) return [];
-
-  // Attempt 1 — header row followed by data rows (tab / multi-space delimited)
-  const headerLine = lines[0];
-  const headers = headerLine.split(/\t+|\s{2,}/).map((h) => h.trim()).filter(Boolean);
-
-  const results = [];
-
-  for (let i = 1; i < lines.length; i++) {
-    const cols = lines[i].split(/\t+|\s{2,}/).map((c) => c.trim()).filter(Boolean);
-    if (cols.length < headers.length * 0.5) continue; // probably not a data row
-
-    const row = {};
-    headers.forEach((h, idx) => {
-      row[h] = cols[idx] || '';
-    });
-
-    const student = normalizeRow(row);
-    if (student) results.push(student);
+  const dataBuffer = new Uint8Array(fs.readFileSync(filePath));
+  const loadingTask = pdfjsLib.getDocument({ data: dataBuffer, useSystemFonts: true });
+  const pdfDocument = await loadingTask.promise;
+  
+  const rawLines = [];
+  
+  for (let pageNum = 1; pageNum <= pdfDocument.numPages; pageNum++) {
+    const page = await pdfDocument.getPage(pageNum);
+    const textContent = await page.getTextContent();
+    const items = textContent.items;
+    
+    // Group text items by their vertical coordinate y (transform[5])
+    const lineMap = new Map();
+    for (const item of items) {
+      if (!item.str || !item.str.trim()) continue;
+      
+      const y = Math.round(item.transform[5]);
+      const x = item.transform[4];
+      
+      let foundKey = null;
+      for (const key of lineMap.keys()) {
+        if (Math.abs(key - y) < 4) { // tolerance of 4 points for the same row
+          foundKey = key;
+          break;
+        }
+      }
+      
+      if (foundKey !== null) {
+        lineMap.get(foundKey).push({ x, text: item.str });
+      } else {
+        lineMap.set(y, [{ x, text: item.str }]);
+      }
+    }
+    
+    // Sort lines from top to bottom
+    const sortedYKeys = Array.from(lineMap.keys()).sort((a, b) => b - a);
+    
+    for (const yKey of sortedYKeys) {
+      // Sort items in the line from left to right
+      const lineItems = lineMap.get(yKey).sort((a, b) => a.x - b.x);
+      
+      // Reconstruct columns by detecting horizontal gaps
+      const columns = [];
+      let currentCol = null;
+      
+      for (const item of lineItems) {
+        const text = item.text;
+        const x = item.x;
+        
+        if (currentCol === null) {
+          currentCol = { x, text };
+        } else {
+          // Estimate character width (approx 6 points per char)
+          const approxCharWidth = 6;
+          const expectedEnd = currentCol.x + (currentCol.text.length * approxCharWidth);
+          // If spacing is less than 15 points, merge into the same column text
+          if (x - expectedEnd < 15) {
+            currentCol.text += " " + text;
+          } else {
+            columns.push(currentCol.text.trim());
+            currentCol = { x, text };
+          }
+        }
+      }
+      if (currentCol !== null) {
+        columns.push(currentCol.text.trim());
+      }
+      
+      if (columns.length > 0) {
+        rawLines.push(columns);
+      }
+    }
   }
-
+  
+  if (rawLines.length < 2) return [];
+  
+  // Find the header row by checking for mapped mandatory fields
+  let headerIndex = -1;
+  let headers = [];
+  
+  for (let i = 0; i < rawLines.length; i++) {
+    const row = rawLines[i];
+    const mappedCols = row.map(c => mapColumn(c)).filter(Boolean);
+    const mandatoryCount = ['hallTicketNumber', 'name', 'rank', 'department'].filter(f => mappedCols.includes(f)).length;
+    
+    if (mandatoryCount >= 3) {
+      headerIndex = i;
+      headers = row;
+      break;
+    }
+  }
+  
+  // Fallback to first row if no header matches
+  if (headerIndex === -1) {
+    headerIndex = 0;
+    headers = rawLines[0];
+  }
+  
+  const results = [];
+  
+  // Parse rows following the header row
+  for (let i = headerIndex + 1; i < rawLines.length; i++) {
+    const cols = rawLines[i];
+    const rowObj = {};
+    
+    headers.forEach((h, idx) => {
+      rowObj[h] = cols[idx] || '';
+    });
+    
+    const student = normalizeRow(rowObj);
+    if (student) {
+      results.push(student);
+    }
+  }
+  
   return results;
 };
 
