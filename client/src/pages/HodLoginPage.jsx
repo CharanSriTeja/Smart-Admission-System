@@ -35,10 +35,24 @@ function HodLoginPage() {
       if (user.role === "hod") {
         navigate("/hod/dashboard", { replace: true });
       } else {
-        navigate("/volunteer/dashboard", { replace: true });
+        // Clear token from other roles to allow clean HOD login
+        localStorage.removeItem('token');
+        window.location.reload();
       }
     }
   }, [isAuthenticated, user, navigate]);
+
+  // Apply HOD blue theme when mounting login page
+  React.useEffect(() => {
+    const root = document.documentElement;
+    root.classList.add("theme-hod");
+    return () => {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        root.classList.remove("theme-hod");
+      }
+    };
+  }, []);
 
   const onSubmit = async (data) => {
     setIsLoading(true);

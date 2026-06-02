@@ -20,6 +20,7 @@ function AuditLogsPage() {
   });
   const [filters, setFilters] = useState({
     user: '',
+    student: '',
     startDate: '',
     endDate: '',
     action: '',
@@ -34,6 +35,7 @@ function AuditLogsPage() {
         limit: pagination.limit,
       };
       if (filters.user) params.user = filters.user;
+      if (filters.student) params.student = filters.student;
       if (filters.startDate) params.startDate = filters.startDate;
       if (filters.endDate) params.endDate = filters.endDate;
       if (filters.action) params.action = filters.action;
@@ -76,15 +78,20 @@ function AuditLogsPage() {
       addToast('warning', 'No data to export');
       return;
     }
-    const data = logs.map(log => ({
-      Timestamp: log.createdAt || log.timestamp,
-      User: log.user?.name || log.userName || 'System',
-      Action: log.action || '',
-      Student: log.student?.name || log.studentName || '',
-      Field: log.field || '',
-      'Old Value': log.oldValue !== undefined ? String(log.oldValue) : '',
-      'New Value': log.newValue !== undefined ? String(log.newValue) : '',
-    }));
+    const data = logs.map(log => {
+      const studentName = log.studentId?.name || log.student?.name || log.studentName || '';
+      const ht = log.studentId?.hallTicketNumber || '';
+      const studentText = ht ? `${studentName} (${ht})` : studentName;
+      return {
+        Timestamp: log.createdAt || log.timestamp,
+        User: log.updatedBy?.name || log.user?.name || log.userName || 'System',
+        Action: log.action || '',
+        Student: studentText,
+        Field: log.field || log.action || '',
+        'Old Value': log.oldValue !== undefined && log.oldValue !== null ? JSON.stringify(log.oldValue) : '',
+        'New Value': log.newValue !== undefined && log.newValue !== null ? JSON.stringify(log.newValue) : '',
+      };
+    });
     exportToExcel(data, 'audit-logs');
     addToast('success', 'Audit logs exported successfully');
   };
@@ -129,7 +136,7 @@ function AuditLogsPage() {
       {/* Filters Panel */}
       {showFilters && (
         <div className="glass-card p-4 mb-6 animate-slide-down">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
             <div>
               <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5">
                 User
@@ -139,6 +146,18 @@ function AuditLogsPage() {
                 value={filters.user}
                 onChange={(e) => handleFilterChange('user', e.target.value)}
                 placeholder="Filter by user..."
+                className="glass-input w-full text-sm"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5">
+                Student / Hall Ticket
+              </label>
+              <input
+                type="text"
+                value={filters.student}
+                onChange={(e) => handleFilterChange('student', e.target.value)}
+                placeholder="Name or Hall Ticket..."
                 className="glass-input w-full text-sm"
               />
             </div>

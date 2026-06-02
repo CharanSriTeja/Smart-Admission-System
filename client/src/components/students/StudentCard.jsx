@@ -5,10 +5,13 @@ import ProgressRing from '../dashboard/ProgressRing';
 import StatusToggle from './StatusToggle';
 import { calculateCompletionPercentage, formatDate } from '../../utils/helpers';
 import { STEP_LABELS, ADMISSION_STEPS } from '../../utils/constants';
+import { useAuth } from '../../context/AuthContext';
 
 function StudentCard({ student, onStatusChange, showActions = true }) {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const completion = calculateCompletionPercentage(student);
+  const isVolunteer = user?.role === 'volunteer';
 
   return (
     <div className="glass-card p-5 card-hover group">
@@ -48,7 +51,7 @@ function StudentCard({ student, onStatusChange, showActions = true }) {
               <span className="text-xs text-gray-500 dark:text-gray-400">
                 {STEP_LABELS[step]}
               </span>
-              {showActions && onStatusChange ? (
+              {showActions && isVolunteer && onStatusChange ? (
                 <StatusToggle
                   checked={!!student[step]}
                   onChange={(val) => onStatusChange(student._id || student.id, step, val)}

@@ -69,7 +69,10 @@ function ProgressRing({
       </svg>
       {showLabel && (
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-2xl font-bold text-gray-900 dark:text-white">
+          <span 
+            className="font-bold text-gray-900 dark:text-white leading-none"
+            style={{ fontSize: `${Math.max(10, size * 0.18)}px` }}
+          >
             {Math.round(animatedPercentage)}%
           </span>
         </div>

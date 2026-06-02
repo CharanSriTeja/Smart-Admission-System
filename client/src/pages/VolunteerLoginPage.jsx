@@ -32,13 +32,27 @@ function VolunteerLoginPage() {
   // Redirect if already authenticated
   React.useEffect(() => {
     if (isAuthenticated && user) {
-      if (user.role === "hod") {
-        navigate("/hod/dashboard", { replace: true });
-      } else {
+      if (user.role === "volunteer") {
         navigate("/volunteer/dashboard", { replace: true });
+      } else {
+        // Clear token from other roles to allow clean Volunteer login
+        localStorage.removeItem('token');
+        window.location.reload();
       }
     }
   }, [isAuthenticated, user, navigate]);
+
+  // Apply Volunteer teal theme when mounting login page
+  React.useEffect(() => {
+    const root = document.documentElement;
+    root.classList.add("theme-volunteer");
+    return () => {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        root.classList.remove("theme-volunteer");
+      }
+    };
+  }, []);
 
   const onSubmit = async (data) => {
     setIsLoading(true);

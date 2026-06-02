@@ -79,9 +79,9 @@ router.post('/upload', auth, authorize('HOD'), upload.single('file'), uploadStud
 
 /**
  * PUT /api/students/:id/status
- * Update admission-step flags (all authenticated users).
+ * Update admission-step flags (Volunteer only).
  */
-router.put('/:id/status', auth, updateStudentStatus);
+router.put('/:id/status', auth, authorize('Volunteer'), updateStudentStatus);
 
 /**
  * DELETE /api/students/:id

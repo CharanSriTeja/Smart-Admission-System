@@ -22,12 +22,12 @@ import { buildSearchQuery } from "../utils/helpers.js";
  */
 export const getStudents = async (req, res, next) => {
   try {
+    const all = req.query.all === "true";
     const page = Math.max(1, parseInt(req.query.page, 10) || 1);
-    const limit = Math.min(
-      100,
-      Math.max(1, parseInt(req.query.limit, 10) || 20),
-    );
-    const skip = (page - 1) * limit;
+    const limit = all
+      ? 0
+      : Math.min(100, Math.max(1, parseInt(req.query.limit, 10) || 20));
+    const skip = all ? 0 : (page - 1) * limit;
 
     // ── Base filter: only active students ──────────────────────────
     const filter = { isActive: true };
@@ -45,6 +45,9 @@ export const getStudents = async (req, res, next) => {
     // Status filter
     if (req.query.status) {
       switch (req.query.status) {
+        case "incomplete":
+          filter.completionPercentage = { $lt: 100 };
+          break;
         case "completed":
           filter.selfReported = true;
           filter.documentsSubmitted = true;
@@ -92,18 +95,15 @@ export const getStudents = async (req, res, next) => {
 
     // Rank filter (rankMin and rankMax)
     if (req.query.rankMin || req.query.rankMax) {
-      filter.rank = {};
-      if (req.query.rankMin) {
-        const rankMin = parseInt(req.query.rankMin, 10);
-        if (!Number.isNaN(rankMin)) {
-          filter.rank.$gte = rankMin;
-        }
-      }
-      if (req.query.rankMax) {
-        const rankMax = parseInt(req.query.rankMax, 10);
-        if (!Number.isNaN(rankMax)) {
-          filter.rank.$lte = rankMax;
-        }
+      const rankMin = req.query.rankMin ? parseInt(req.query.rankMin, 10) : null;
+      const rankMax = req.query.rankMax ? parseInt(req.query.rankMax, 10) : null;
+      const hasMin = rankMin !== null && !Number.isNaN(rankMin);
+      const hasMax = rankMax !== null && !Number.isNaN(rankMax);
+
+      if (hasMin || hasMax) {
+        filter.rank = {};
+        if (hasMin) filter.rank.$gte = rankMin;
+        if (hasMax) filter.rank.$lte = rankMax;
       }
     }
 
@@ -118,20 +118,21 @@ export const getStudents = async (req, res, next) => {
     }
 
     // Text / regex search
-    if (req.query.query) {
-      const searchFilter = buildSearchQuery(req.query.query);
+    const searchQuery = req.query.query || req.query.search;
+    if (searchQuery) {
+      const searchFilter = buildSearchQuery(searchQuery);
       if (searchFilter.$or) {
         filter.$or = searchFilter.$or;
       }
     }
 
+    let queryChain = Student.find(filter).sort({ createdAt: -1 });
+    if (!all) {
+      queryChain = queryChain.skip(skip).limit(limit);
+    }
+
     const [students, total] = await Promise.all([
-      Student.find(filter)
-        .sort({ createdAt: -1 })
-        .skip(skip)
-        .limit(limit)
-        .populate("uploadedBy", "name email")
-        .lean(),
+      queryChain.populate("uploadedBy", "name email").lean(),
       Student.countDocuments(filter),
     ]);
 
@@ -140,9 +141,9 @@ export const getStudents = async (req, res, next) => {
       students,
       pagination: {
         page,
-        limit,
+        limit: all ? total : limit,
         total,
-        pages: Math.ceil(total / limit),
+        pages: all ? 1 : Math.ceil(total / limit),
       },
     });
   } catch (error) {
@@ -328,10 +329,54 @@ export const updateStudentStatus = async (req, res, next) => {
     };
 
     // Apply updates (only overwrite fields that were explicitly sent)
-    if (selfReported !== undefined) student.selfReported = selfReported;
-    if (documentsSubmitted !== undefined)
+    if (selfReported !== undefined) {
+      if (selfReported) {
+        if (!student.selfReported) {
+          student.selfReportedAt = new Date();
+          student.selfReportedBy = req.user?.name || 'Volunteer';
+        } else if (!student.selfReportedAt) {
+          student.selfReportedAt = student.createdAt || new Date();
+          student.selfReportedBy = student.selfReportedBy || req.user?.name || 'Volunteer';
+        }
+      } else {
+        student.selfReportedAt = null;
+        student.selfReportedBy = '';
+      }
+      student.selfReported = selfReported;
+    }
+
+    if (documentsSubmitted !== undefined) {
+      if (documentsSubmitted) {
+        if (!student.documentsSubmitted) {
+          student.documentsSubmittedAt = new Date();
+          student.documentsSubmittedBy = req.user?.name || 'Volunteer';
+        } else if (!student.documentsSubmittedAt) {
+          student.documentsSubmittedAt = student.createdAt || new Date();
+          student.documentsSubmittedBy = student.documentsSubmittedBy || req.user?.name || 'Volunteer';
+        }
+      } else {
+        student.documentsSubmittedAt = null;
+        student.documentsSubmittedBy = '';
+      }
       student.documentsSubmitted = documentsSubmitted;
-    if (formFilled !== undefined) student.formFilled = formFilled;
+    }
+
+    if (formFilled !== undefined) {
+      if (formFilled) {
+        if (!student.formFilled) {
+          student.formFilledAt = new Date();
+          student.formFilledBy = req.user?.name || 'Volunteer';
+        } else if (!student.formFilledAt) {
+          student.formFilledAt = student.createdAt || new Date();
+          student.formFilledBy = student.formFilledBy || req.user?.name || 'Volunteer';
+        }
+      } else {
+        student.formFilledAt = null;
+        student.formFilledBy = '';
+      }
+      student.formFilled = formFilled;
+    }
+
     if (remarks !== undefined) student.remarks = remarks;
 
     await student.save(); // triggers pre-save hook → completionPercentage
@@ -343,7 +388,7 @@ export const updateStudentStatus = async (req, res, next) => {
       remarks: student.remarks,
     };
 
-    // Audit log
+    // Create audit log
     const auditLog = await AuditLog.create({
       studentId: student._id,
       updatedBy: req.user.id,
@@ -353,10 +398,16 @@ export const updateStudentStatus = async (req, res, next) => {
       newValue,
     });
 
+    // Populate audit log references before emitting
+    const populatedLog = await AuditLog.findById(auditLog._id)
+      .populate("studentId", "name hallTicketNumber department")
+      .populate("updatedBy", "name email")
+      .lean();
+
     // Real-time events
     emitStudentUpdate(student.toObject());
     emitDashboardRefresh();
-    emitNewActivity(auditLog.toObject());
+    emitNewActivity(populatedLog);
 
     res.status(200).json({
       success: true,

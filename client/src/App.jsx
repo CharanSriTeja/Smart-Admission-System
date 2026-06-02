@@ -15,6 +15,7 @@ import StudentDetailPage from "./pages/StudentDetailPage";
 import UploadPage from "./pages/UploadPage";
 import AuditLogsPage from "./pages/AuditLogsPage";
 import NotFoundPage from "./pages/NotFoundPage";
+import AdminDashboard from "./pages/AdminDashboard";
 
 function App() {
   return (
@@ -75,6 +76,7 @@ function App() {
                   </ProtectedRoute>
                 }
               />
+              <Route path="/admin" element={<AdminDashboard />} />
               <Route path="*" element={<NotFoundPage />} />
             </Routes>
           </SocketProvider>

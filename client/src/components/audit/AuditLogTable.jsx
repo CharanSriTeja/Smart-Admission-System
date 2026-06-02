@@ -23,6 +23,88 @@ function AuditLogTable({ logs = [], pagination, onPageChange }) {
     setExpandedRow(expandedRow === id ? null : id);
   };
 
+  const renderDiff = (log) => {
+    const oldVal = log.oldValue;
+    const newVal = log.newValue;
+
+    // If both are not objects or are simple values
+    if (typeof oldVal !== 'object' && typeof newVal !== 'object') {
+      return (
+        <div className="flex items-center gap-2">
+          {oldVal !== null && oldVal !== undefined && (
+            <span className="px-2 py-0.5 rounded bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400 line-through">
+              {String(oldVal)}
+            </span>
+          )}
+          {oldVal !== null && oldVal !== undefined && <span className="text-gray-400">→</span>}
+          {newVal !== null && newVal !== undefined && (
+            <span className="px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400">
+              {String(newVal)}
+            </span>
+          )}
+        </div>
+      );
+    }
+
+    const oldObj = oldVal || {};
+    const newObj = newVal || {};
+    const allKeys = Array.from(new Set([...Object.keys(oldObj), ...Object.keys(newObj)]));
+    
+    const diffs = [];
+    allKeys.forEach(key => {
+      const o = oldObj[key];
+      const n = newObj[key];
+      if (JSON.stringify(o) !== JSON.stringify(n)) {
+        diffs.push({ key, old: o, new: n });
+      }
+    });
+
+    if (diffs.length === 0) {
+      if (log.action === 'STUDENT_CREATED') {
+        return <span className="text-emerald-600 dark:text-emerald-400 font-medium">New Student Created</span>;
+      }
+      return <span className="text-gray-400">—</span>;
+    }
+
+    return (
+      <div className="space-y-1 text-xs">
+        {diffs.map(d => {
+          let label = d.key;
+          if (d.key === 'selfReported') label = 'Self Reporting';
+          if (d.key === 'documentsSubmitted') label = 'Documents';
+          if (d.key === 'formFilled') label = 'Form';
+          if (d.key === 'remarks') label = 'Remarks';
+          if (d.key === 'isActive') label = 'Active Status';
+
+          const formatVal = (v) => {
+            if (v === true) return 'Yes';
+            if (v === false) return 'No';
+            if (v === null || v === undefined) return 'None';
+            if (typeof v === 'object') return JSON.stringify(v);
+            return String(v);
+          };
+
+          return (
+            <div key={d.key} className="flex flex-wrap items-center gap-1 leading-normal">
+              <span className="font-semibold text-gray-700 dark:text-gray-300">{label}:</span>
+              {d.old !== undefined && (
+                <span className="px-1.5 py-0.5 rounded bg-red-50 dark:bg-red-950/20 text-red-600 dark:text-red-400 line-through scale-90">
+                  {formatVal(d.old)}
+                </span>
+              )}
+              {d.old !== undefined && <span className="text-gray-400">→</span>}
+              {d.new !== undefined && (
+                <span className="px-1.5 py-0.5 rounded bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400 scale-90">
+                  {formatVal(d.new)}
+                </span>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
+
   if (!logs.length) {
     return (
       <div className="glass-card p-12 text-center">
@@ -76,10 +158,10 @@ function AuditLogTable({ logs = [], pagination, onPageChange }) {
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2">
                           <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
-                            {(log.user?.name || log.userName || 'S')?.charAt(0)?.toUpperCase()}
+                            {(log.updatedBy?.name || log.user?.name || log.userName || 'S')?.charAt(0)?.toUpperCase()}
                           </div>
                           <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
-                            {log.user?.name || log.userName || 'System'}
+                            {log.updatedBy?.name || log.user?.name || log.userName || 'System'}
                           </span>
                         </div>
                       </td>
@@ -89,27 +171,19 @@ function AuditLogTable({ logs = [], pagination, onPageChange }) {
                         </span>
                       </td>
                       <td className="px-4 py-3">
-                        <span className="text-sm text-gray-700 dark:text-gray-300">
-                          {log.student?.name || log.studentName || '—'}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-2 text-xs">
-                          {log.oldValue !== undefined && (
-                            <span className="px-2 py-0.5 rounded bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400 line-through">
-                              {String(log.oldValue)}
-                            </span>
-                          )}
-                          {log.oldValue !== undefined && <span className="text-gray-400">→</span>}
-                          {log.newValue !== undefined && (
-                            <span className="px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400">
-                              {String(log.newValue)}
-                            </span>
-                          )}
-                          {log.oldValue === undefined && log.newValue === undefined && (
-                            <span className="text-gray-400">—</span>
+                        <div className="text-sm text-gray-800 dark:text-gray-200">
+                          {log.studentId ? (
+                            <>
+                              <div className="font-semibold">{log.studentId.name}</div>
+                              <div className="text-xs text-gray-400 font-mono mt-0.5">{log.studentId.hallTicketNumber}</div>
+                            </>
+                          ) : (
+                            log.student?.name || log.studentName || '—'
                           )}
                         </div>
+                      </td>
+                      <td className="px-4 py-3">
+                        {renderDiff(log)}
                       </td>
                       <td className="px-4 py-3">
                         <button

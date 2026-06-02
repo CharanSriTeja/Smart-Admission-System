@@ -59,8 +59,58 @@ export const getStats = async (req, res, next) => {
 
     const inProgressStudents = totalStudents - completedStudents - pendingStudents;
 
+    // ── Completion Trend (last 7 days) ──────────────────────────────
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
+    sevenDaysAgo.setHours(0, 0, 0, 0);
+
+    const trendMatch = {
+      isActive: true,
+      completedAt: { $gte: sevenDaysAgo }
+    };
+    if (req.query.department) {
+      trendMatch.department = req.query.department;
+    }
+
+    const trend = await Student.aggregate([
+      {
+        $match: trendMatch
+      },
+      {
+        $group: {
+          _id: { $dateToString: { format: "%Y-%m-%d", date: "$completedAt" } },
+          count: { $sum: 1 }
+        }
+      },
+      { $sort: { _id: 1 } }
+    ]);
+
+    const weekdayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const trendMap = new Map(trend.map(t => [t._id, t.count]));
+    const trendData = [];
+
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      const dateStr = d.toISOString().split('T')[0];
+      const dayName = weekdayNames[d.getDay()];
+      trendData.push({
+        date: dayName,
+        count: trendMap.get(dateStr) || 0
+      });
+    }
+
+    // ── Total College Students (unscoped) ──────────────────────────
+    const totalCollegeStudents = await Student.countDocuments({ isActive: true });
+
     // ── Recent activity ───────────────────────────────────────────
-    const recentActivity = await AuditLog.find({})
+    let logFilter = {};
+    if (req.query.department) {
+      const studentIds = await Student.find({ department: req.query.department }).distinct('_id');
+      logFilter.studentId = { $in: studentIds };
+    }
+
+    const recentActivity = await AuditLog.find(logFilter)
       .sort({ timestamp: -1 })
       .limit(10)
       .populate('studentId', 'name hallTicketNumber department')
@@ -78,6 +128,8 @@ export const getStats = async (req, res, next) => {
         documentsSubmittedCount,
         formFilledCount,
         todayCount,
+        trendData,
+        totalCollegeStudents,
       },
       recentActivity,
     });

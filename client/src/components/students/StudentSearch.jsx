@@ -2,11 +2,16 @@ import React, { useState } from "react";
 import { Search, Filter, X, SlidersHorizontal } from "lucide-react";
 import { useDebounce } from "../../hooks/useDebounce";
 import { DEPARTMENTS, STATUS_FILTERS } from "../../utils/constants";
+import { useAuth } from "../../context/AuthContext";
 
 function StudentSearch({ onSearch, onFilter, filters = {} }) {
+  const { user } = useAuth();
+  const isVolunteer = user?.role === 'volunteer';
+  const userDept = user?.department || '';
+
   const [searchTerm, setSearchTerm] = useState(filters.search || "");
   const [showFilters, setShowFilters] = useState(false);
-  const [department, setDepartment] = useState(filters.department || "");
+  const [department, setDepartment] = useState(filters.department || (isVolunteer ? userDept : ""));
   const [status, setStatus] = useState(filters.status || "all");
   const [rankFilter, setRankFilter] = useState(filters.rankMin || "");
   const [rankMaxFilter, setRankMaxFilter] = useState(filters.rankMax || "");
@@ -17,6 +22,26 @@ function StudentSearch({ onSearch, onFilter, filters = {} }) {
   React.useEffect(() => {
     onSearch?.(debouncedSearch);
   }, [debouncedSearch]);
+
+  React.useEffect(() => {
+    setDepartment(filters.department || "");
+  }, [filters.department]);
+
+  React.useEffect(() => {
+    setStatus(filters.status || "all");
+  }, [filters.status]);
+
+  React.useEffect(() => {
+    setRankFilter(filters.rankMin || "");
+  }, [filters.rankMin]);
+
+  React.useEffect(() => {
+    setRankMaxFilter(filters.rankMax || "");
+  }, [filters.rankMax]);
+
+  React.useEffect(() => {
+    setPhoneFilter(filters.phone || "");
+  }, [filters.phone]);
 
   const handleDepartmentChange = (value) => {
     setDepartment(value);
@@ -65,14 +90,15 @@ function StudentSearch({ onSearch, onFilter, filters = {} }) {
 
   const clearFilters = () => {
     setSearchTerm("");
-    setDepartment("");
+    const defaultDept = isVolunteer ? userDept : "";
+    setDepartment(defaultDept);
     setStatus("all");
     setRankFilter("");
     setRankMaxFilter("");
     setPhoneFilter("");
     onSearch?.("");
     onFilter?.({
-      department: "",
+      department: defaultDept,
       status: "all",
       rankMin: "",
       rankMax: "",
@@ -82,7 +108,7 @@ function StudentSearch({ onSearch, onFilter, filters = {} }) {
 
   const hasActiveFilters =
     searchTerm ||
-    department ||
+    (isVolunteer ? department !== userDept : department) ||
     (status && status !== "all") ||
     rankFilter ||
     rankMaxFilter ||
@@ -141,9 +167,11 @@ function StudentSearch({ onSearch, onFilter, filters = {} }) {
               <select
                 value={department}
                 onChange={(e) => handleDepartmentChange(e.target.value)}
-                className="glass-input w-full text-sm"
+                className="glass-input w-full text-sm disabled:opacity-75 disabled:cursor-not-allowed"
+                disabled={isVolunteer}
+                title={isVolunteer ? `Locked to your department (${userDept})` : ""}
               >
-                <option value="">All Departments</option>
+                {!isVolunteer && <option value="">All Departments</option>}
                 {DEPARTMENTS.map((dept) => (
                   <option key={dept} value={dept}>
                     {dept}

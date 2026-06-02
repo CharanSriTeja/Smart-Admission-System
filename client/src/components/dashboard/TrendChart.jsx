@@ -25,15 +25,21 @@ const CustomTooltip = ({ active, payload, label }) => {
 function TrendChart({ data = [] }) {
   const { darkMode } = useTheme();
 
-  const chartData = data.length ? data : [
-    { date: 'Mon', count: 12 },
-    { date: 'Tue', count: 19 },
-    { date: 'Wed', count: 15 },
-    { date: 'Thu', count: 25 },
-    { date: 'Fri', count: 22 },
-    { date: 'Sat', count: 30 },
-    { date: 'Sun', count: 18 },
-  ];
+  const defaultChartData = () => {
+    const weekdayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const result = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      result.push({
+        date: weekdayNames[d.getDay()],
+        count: 0
+      });
+    }
+    return result;
+  };
+
+  const chartData = data && data.length ? data : defaultChartData();
 
   return (
     <div className="glass-card p-6">

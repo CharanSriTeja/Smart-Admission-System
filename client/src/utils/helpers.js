@@ -2,6 +2,7 @@ import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
+import { DEPARTMENTS } from './constants';
 
 /**
  * Format date to a readable string
@@ -115,11 +116,19 @@ export function exportToPDF(data, columns, title = 'Report') {
   // Subtitle
   doc.setFontSize(10);
   doc.setTextColor(100);
-  doc.text(`Generated on ${new Date().toLocaleDateString('en-IN')}`, 14, 30);
+  doc.text(`Generated on ${new Date().toLocaleString('en-IN')}`, 14, 30);
+  // Filter out any branches other than the allowed DEPARTMENTS
+  const filteredData = data.filter(row => {
+    const deptValue = row.Department || row.department || row.branch || row.Branch;
+    if (deptValue) {
+      return DEPARTMENTS.includes(String(deptValue).toUpperCase().trim());
+    }
+    return true;
+  });
 
   // Table
   const tableColumn = columns.map(col => col.header || col);
-  const tableRows = data.map(row =>
+  const tableRows = filteredData.map(row =>
     columns.map(col => {
       const key = col.key || col;
       const value = row[key];

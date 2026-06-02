@@ -8,13 +8,8 @@
  */
 export const DEPARTMENTS = [
   'CSE',
-  'ECE',
-  'EEE',
-  'MECH',
-  'CIVIL',
-  'IT',
-  'AIDS',
   'AIML',
+  'CIC',
 ];
 
 /**

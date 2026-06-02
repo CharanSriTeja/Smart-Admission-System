@@ -1,4 +1,4 @@
-export const DEPARTMENTS = ['CSE', 'ECE', 'EEE', 'MECH', 'CIVIL', 'IT', 'AIDS', 'AIML'];
+export const DEPARTMENTS = ['CSE', 'AIML', 'CIC'];
 
 export const STATUS_FILTERS = ['all', 'completed', 'pending', 'in-progress'];
 

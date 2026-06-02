@@ -4,13 +4,15 @@
  */
 
 import AuditLog from '../models/AuditLog.js';
+import User from '../models/User.js';
+import Student from '../models/Student.js';
 
 /**
  * GET /api/logs
  * Return paginated audit logs with optional filters.
  *
  * Query params:
- *   page, limit, updatedBy (userId), startDate, endDate, action
+ *   page, limit, updatedBy (userId), user (name), student (name/hallTicket), startDate, endDate, action
  */
 export const getLogs = async (req, res, next) => {
   try {
@@ -23,6 +25,20 @@ export const getLogs = async (req, res, next) => {
     // Filter by user who made the change
     if (req.query.updatedBy) {
       filter.updatedBy = req.query.updatedBy;
+    } else if (req.query.user) {
+      const users = await User.find({ name: { $regex: req.query.user, $options: 'i' } }).select('_id').lean();
+      filter.updatedBy = { $in: users.map(u => u._id) };
+    }
+
+    // Filter by student name or hall ticket number
+    if (req.query.student) {
+      const students = await Student.find({
+        $or: [
+          { name: { $regex: req.query.student, $options: 'i' } },
+          { hallTicketNumber: { $regex: req.query.student, $options: 'i' } }
+        ]
+      }).select('_id').lean();
+      filter.studentId = { $in: students.map(s => s._id) };
     }
 
     // Filter by action type

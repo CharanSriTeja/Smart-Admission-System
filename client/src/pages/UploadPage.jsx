@@ -233,24 +233,82 @@ function UploadPage() {
                 </div>
                 <div>
                   <h4 className="font-medium text-gray-800 dark:text-gray-200 mb-1.5">Required Columns</h4>
-                  <ul className="space-y-1.5">
-                    {['name', 'hallTicketNumber', 'rank', 'department', 'phone'].map(col => (
-                      <li key={col} className="flex items-center gap-2">
+                  <ul className="space-y-2">
+                    <li className="flex flex-col gap-0.5">
+                      <div className="flex items-center gap-2">
                         <div className="w-1.5 h-1.5 rounded-full bg-primary-400" />
-                        <code className="text-xs bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded">{col}</code>
-                      </li>
-                    ))}
+                        <code className="text-xs font-semibold bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded">hallTicketNumber</code>
+                      </div>
+                      <span className="text-xs text-gray-400 dark:text-gray-500 ml-3.5">Aliases: hallTicket, htno, ht no, hallTicketNo</span>
+                    </li>
+                    <li className="flex flex-col gap-0.5">
+                      <div className="flex items-center gap-2">
+                        <div className="w-1.5 h-1.5 rounded-full bg-primary-400" />
+                        <code className="text-xs font-semibold bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded">name</code>
+                      </div>
+                      <span className="text-xs text-gray-400 dark:text-gray-500 ml-3.5">Aliases: studentName, fullName, student name</span>
+                    </li>
+                    <li className="flex flex-col gap-0.5">
+                      <div className="flex items-center gap-2">
+                        <div className="w-1.5 h-1.5 rounded-full bg-primary-400" />
+                        <code className="text-xs font-semibold bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded">rank</code>
+                      </div>
+                      <span className="text-xs text-gray-400 dark:text-gray-500 ml-3.5">Aliases: eamcetRank, meritRank, eamcet rank</span>
+                    </li>
+                    <li className="flex flex-col gap-0.5">
+                      <div className="flex items-center gap-2">
+                        <div className="w-1.5 h-1.5 rounded-full bg-primary-400" />
+                        <code className="text-xs font-semibold bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded">department</code>
+                      </div>
+                      <span className="text-xs text-gray-400 dark:text-gray-500 ml-3.5">Aliases: dept, branch</span>
+                    </li>
                   </ul>
                 </div>
                 <div>
                   <h4 className="font-medium text-gray-800 dark:text-gray-200 mb-1.5">Optional Columns</h4>
-                  <ul className="space-y-1.5">
-                    {['email', 'parentName', 'address'].map(col => (
-                      <li key={col} className="flex items-center gap-2">
+                  <ul className="space-y-2">
+                    <li className="flex flex-col gap-0.5">
+                      <div className="flex items-center gap-2">
                         <div className="w-1.5 h-1.5 rounded-full bg-gray-300 dark:bg-gray-600" />
-                        <code className="text-xs bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded">{col}</code>
-                      </li>
-                    ))}
+                        <code className="text-xs font-semibold bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded">studentPhone</code>
+                      </div>
+                      <span className="text-xs text-gray-400 dark:text-gray-500 ml-3.5">Aliases: phone, mobile, contact, student phone</span>
+                    </li>
+                    <li className="flex flex-col gap-0.5">
+                      <div className="flex items-center gap-2">
+                        <div className="w-1.5 h-1.5 rounded-full bg-gray-300 dark:bg-gray-600" />
+                        <code className="text-xs font-semibold bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded">parentPhone</code>
+                      </div>
+                      <span className="text-xs text-gray-400 dark:text-gray-500 ml-3.5">Aliases: parentPhone, parent mobile, guardian phone</span>
+                    </li>
+                    <li className="flex flex-col gap-0.5">
+                      <div className="flex items-center gap-2">
+                        <div className="w-1.5 h-1.5 rounded-full bg-gray-300 dark:bg-gray-600" />
+                        <code className="text-xs font-semibold bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded">email</code>
+                      </div>
+                      <span className="text-xs text-gray-400 dark:text-gray-500 ml-3.5">Aliases: emailId, student email</span>
+                    </li>
+                    <li className="flex flex-col gap-0.5">
+                      <div className="flex items-center gap-2">
+                        <div className="w-1.5 h-1.5 rounded-full bg-gray-300 dark:bg-gray-600" />
+                        <code className="text-xs font-semibold bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded">category</code>
+                      </div>
+                      <span className="text-xs text-gray-400 dark:text-gray-500 ml-3.5">Aliases: caste, reservation</span>
+                    </li>
+                    <li className="flex flex-col gap-0.5">
+                      <div className="flex items-center gap-2">
+                        <div className="w-1.5 h-1.5 rounded-full bg-gray-300 dark:bg-gray-600" />
+                        <code className="text-xs font-semibold bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded">gender</code>
+                      </div>
+                      <span className="text-xs text-gray-400 dark:text-gray-500 ml-3.5">Aliases: sex</span>
+                    </li>
+                    <li className="flex flex-col gap-0.5">
+                      <div className="flex items-center gap-2">
+                        <div className="w-1.5 h-1.5 rounded-full bg-gray-300 dark:bg-gray-600" />
+                        <code className="text-xs font-semibold bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded">region</code>
+                      </div>
+                      <span className="text-xs text-gray-400 dark:text-gray-500 ml-3.5">Aliases: university</span>
+                    </li>
                   </ul>
                 </div>
                 <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 text-xs">

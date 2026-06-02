@@ -119,7 +119,7 @@ function LandingPage() {
             Smart Admission Tracking & Verification System
           </p>
           <p className="text-gray-500 dark:text-gray-500 text-xs">
-            © 2024 All rights reserved
+            © 2026 All rights reserved
           </p>
         </div>
       </div>

@@ -6,9 +6,22 @@
    Design System - CSS Custom Properties
    ============================================ */
 :root {
-  --color-primary: #6366f1;
-  --color-primary-light: #818cf8;
-  --color-primary-dark: #4f46e5;
+  /* Default Primary Brand Colors (Indigo) */
+  --primary-50: 238 242 255;
+  --primary-100: 224 231 255;
+  --primary-200: 199 210 254;
+  --primary-300: 165 180 252;
+  --primary-400: 129 140 248;
+  --primary-500: 99 102 241;
+  --primary-600: 79 70 229;
+  --primary-700: 67 56 202;
+  --primary-800: 55 48 163;
+  --primary-900: 49 46 129;
+  --primary-950: 30 27 75;
+
+  --color-primary: rgb(var(--primary-500));
+  --color-primary-light: rgb(var(--primary-400));
+  --color-primary-dark: rgb(var(--primary-600));
   --color-success: #22c55e;
   --color-warning: #f59e0b;
   --color-error: #ef4444;
@@ -28,8 +41,8 @@
 }
 
 .dark {
-  --glass-bg: rgba(30, 27, 75, 0.6);
-  --glass-border: rgba(99, 102, 241, 0.15);
+  --glass-bg: rgba(15, 10, 26, 0.6);
+  --glass-border: rgb(var(--primary-500) / 0.15);
   --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.35);
 
   --bg-primary: #0f0a1a;
@@ -39,6 +52,76 @@
   --text-muted: #64748b;
   --border-color: #1e293b;
   --card-bg: #1e1b4b;
+}
+
+/* ============================================
+   Role-Based Themes
+   ============================================ */
+
+/* 1. Admin Theme (Violet/Indigo Accent) */
+.theme-admin {
+  --primary-50: 245 243 255;
+  --primary-100: 237 233 254;
+  --primary-200: 221 214 254;
+  --primary-300: 196 181 253;
+  --primary-400: 167 139 250;
+  --primary-500: 139 92 246;
+  --primary-600: 124 58 237;
+  --primary-700: 109 40 217;
+  --primary-800: 91 33 182;
+  --primary-900: 76 29 149;
+  --primary-950: 46 16 101;
+}
+.theme-admin.dark, .dark .theme-admin {
+  --bg-primary: #090514;
+  --bg-secondary: #120b24;
+  --card-bg: #1a1033;
+  --glass-bg: rgba(26, 16, 51, 0.6);
+  --glass-border: rgba(139, 92, 246, 0.15);
+}
+
+/* 2. Volunteer Theme (Teal Accent) */
+.theme-volunteer {
+  --primary-50: 240 253 250;
+  --primary-100: 204 251 241;
+  --primary-200: 153 246 228;
+  --primary-300: 94 234 212;
+  --primary-400: 45 212 191;
+  --primary-500: 13 148 136;
+  --primary-600: 15 118 110;
+  --primary-700: 17 94 89;
+  --primary-800: 19 78 74;
+  --primary-900: 17 94 89;
+  --primary-950: 4 47 46;
+}
+.theme-volunteer.dark, .dark .theme-volunteer {
+  --bg-primary: #020b0a;
+  --bg-secondary: #051a17;
+  --card-bg: #0b2c28;
+  --glass-bg: rgba(11, 44, 40, 0.6);
+  --glass-border: rgba(13, 148, 136, 0.15);
+}
+
+/* 3. HOD Theme (Blue Accent) */
+.theme-hod {
+  --primary-50: 239 246 255;
+  --primary-100: 219 234 254;
+  --primary-200: 191 219 254;
+  --primary-300: 147 197 253;
+  --primary-400: 96 165 250;
+  --primary-500: 59 130 246;
+  --primary-600: 37 99 235;
+  --primary-700: 29 78 216;
+  --primary-800: 30 64 175;
+  --primary-900: 30 58 138;
+  --primary-950: 23 37 84;
+}
+.theme-hod.dark, .dark .theme-hod {
+  --bg-primary: #030712;
+  --bg-secondary: #070f22;
+  --card-bg: #0c1a3a;
+  --glass-bg: rgba(12, 26, 58, 0.6);
+  --glass-border: rgba(59, 130, 246, 0.15);
 }
 
 /* ============================================
@@ -70,10 +153,10 @@ body {
   }
 
   .glass-dark {
-    background: rgba(30, 27, 75, 0.55);
+    background: var(--glass-bg);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(99, 102, 241, 0.12);
+    border: 1px solid rgb(var(--primary-500) / 0.12);
     box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
   }
 
@@ -131,23 +214,23 @@ body {
    Custom Backgrounds
    ============================================ */
 .bg-mesh {
-  background-color: #f8fafc;
+  background-color: var(--bg-primary);
   background-image:
-    radial-gradient(at 40% 20%, rgba(99, 102, 241, 0.08) 0px, transparent 50%),
-    radial-gradient(at 80% 0%, rgba(139, 92, 246, 0.06) 0px, transparent 50%),
-    radial-gradient(at 0% 50%, rgba(59, 130, 246, 0.06) 0px, transparent 50%),
-    radial-gradient(at 80% 50%, rgba(236, 72, 153, 0.04) 0px, transparent 50%),
-    radial-gradient(at 0% 100%, rgba(99, 102, 241, 0.06) 0px, transparent 50%);
+    radial-gradient(at 40% 20%, rgb(var(--primary-500) / 0.08) 0px, transparent 50%),
+    radial-gradient(at 80% 0%, rgb(var(--primary-600) / 0.06) 0px, transparent 50%),
+    radial-gradient(at 0% 50%, rgb(var(--primary-400) / 0.06) 0px, transparent 50%),
+    radial-gradient(at 80% 50%, rgb(var(--primary-700) / 0.04) 0px, transparent 50%),
+    radial-gradient(at 0% 100%, rgb(var(--primary-500) / 0.06) 0px, transparent 50%);
 }
 
 .dark .bg-mesh {
-  background-color: #0f0a1a;
+  background-color: var(--bg-primary);
   background-image:
-    radial-gradient(at 40% 20%, rgba(99, 102, 241, 0.15) 0px, transparent 50%),
-    radial-gradient(at 80% 0%, rgba(139, 92, 246, 0.1) 0px, transparent 50%),
-    radial-gradient(at 0% 50%, rgba(59, 130, 246, 0.08) 0px, transparent 50%),
-    radial-gradient(at 80% 50%, rgba(236, 72, 153, 0.06) 0px, transparent 50%),
-    radial-gradient(at 0% 100%, rgba(99, 102, 241, 0.1) 0px, transparent 50%);
+    radial-gradient(at 40% 20%, rgb(var(--primary-500) / 0.15) 0px, transparent 50%),
+    radial-gradient(at 80% 0%, rgb(var(--primary-600) / 0.1) 0px, transparent 50%),
+    radial-gradient(at 0% 50%, rgb(var(--primary-400) / 0.08) 0px, transparent 50%),
+    radial-gradient(at 80% 50%, rgb(var(--primary-700) / 0.06) 0px, transparent 50%),
+    radial-gradient(at 0% 100%, rgb(var(--primary-500) / 0.1) 0px, transparent 50%);
 }
 
 /* ============================================
@@ -310,3 +393,328 @@ body {
 .toggle-switch-dot {
   @apply inline-block h-4 w-4 rounded-full bg-white shadow-md transition-transform duration-300;
 }
+
+/* ==========================================================================
+   ROLE-SPECIFIC COMPLETE STYLING OVERRIDES
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. ADMIN THEME: Cyber-Tech Control Center (Dark-Mode First, Neon Accents)
+   -------------------------------------------------------------------------- */
+.theme-admin {
+  font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace !important;
+  --bg-primary: #080313 !important;
+  --bg-secondary: #0d061f !important;
+  --card-bg: #110829 !important;
+  --border-color: #311860 !important;
+  --text-primary: #f5f3ff !important;
+  --text-secondary: #a78bfa !important;
+  --text-muted: #6d28d9 !important;
+}
+
+/* Admin Custom Dotted Tech Background Mesh */
+.theme-admin.bg-mesh, .theme-admin .bg-mesh {
+  background-color: #080313 !important;
+  background-image:
+    radial-gradient(at 10% 20%, rgba(139, 92, 246, 0.18) 0px, transparent 50%),
+    radial-gradient(at 90% 80%, rgba(236, 72, 153, 0.15) 0px, transparent 50%),
+    radial-gradient(at 50% 50%, rgba(99, 102, 241, 0.08) 0px, transparent 60%),
+    linear-gradient(rgba(139, 92, 246, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(139, 92, 246, 0.05) 1px, transparent 1px) !important;
+  background-size: 100% 100%, 100% 100%, 100% 100%, 25px 25px, 25px 25px !important;
+}
+
+/* Admin Cyber Glass Card */
+.theme-admin .glass-card {
+  background: rgba(17, 8, 41, 0.8) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  border: 1px solid rgba(139, 92, 246, 0.35) !important;
+  box-shadow: 0 0 15px rgba(139, 92, 246, 0.12), inset 0 0 10px rgba(139, 92, 246, 0.05) !important;
+  border-radius: 8px !important;
+}
+.theme-admin .glass-card:hover {
+  border-color: rgba(236, 72, 153, 0.55) !important;
+  box-shadow: 0 0 25px rgba(139, 92, 246, 0.25), 0 0 10px rgba(236, 72, 153, 0.15), inset 0 0 12px rgba(139, 92, 246, 0.08) !important;
+  transform: translateY(-2px);
+}
+
+/* Admin Form Inputs */
+.theme-admin .glass-input, .theme-admin input, .theme-admin select {
+  background: #05020d !important;
+  border: 1px solid #311860 !important;
+  color: #e9e3ff !important;
+  font-family: 'Courier New', Courier, monospace !important;
+  border-radius: 6px !important;
+  box-shadow: none !important;
+}
+.theme-admin .glass-input:focus, .theme-admin input:focus, .theme-admin select:focus {
+  border-color: #8b5cf6 !important;
+  box-shadow: 0 0 8px rgba(139, 92, 246, 0.4) !important;
+}
+
+/* Admin Buttons */
+.theme-admin .glass-button, .theme-admin button[type="submit"] {
+  background: linear-gradient(135deg, #7c3aed, #db2777) !important;
+  border: 1px solid #a78bfa !important;
+  font-family: 'Courier New', Courier, monospace !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.12em !important;
+  border-radius: 6px !important;
+  box-shadow: 0 0 12px rgba(124, 58, 237, 0.25) !important;
+}
+.theme-admin .glass-button:hover, .theme-admin button[type="submit"]:hover {
+  background: linear-gradient(135deg, #8b5cf6, #ec4899) !important;
+  box-shadow: 0 0 20px rgba(124, 58, 237, 0.5), 0 0 8px rgba(236, 72, 153, 0.3) !important;
+  transform: translateY(-1px) !important;
+}
+
+/* Admin Table Custom Styling */
+.theme-admin table {
+  font-family: 'Courier New', Courier, monospace !important;
+}
+.theme-admin tr {
+  border-bottom: 1px solid rgba(139, 92, 246, 0.15) !important;
+  transition: all 0.2s ease;
+}
+.theme-admin tr:hover {
+  background: rgba(139, 92, 246, 0.05) !important;
+  box-shadow: inset 3px 0 0 #8b5cf6;
+}
+
+/* Admin Scrollbar Customization */
+.theme-admin ::-webkit-scrollbar-thumb {
+  background: rgba(139, 92, 246, 0.4) !important;
+  border-radius: 4px !important;
+}
+.theme-admin ::-webkit-scrollbar-thumb:hover {
+  background: rgba(236, 72, 153, 0.7) !important;
+}
+
+
+/* --------------------------------------------------------------------------
+   2. VOLUNTEER THEME: Cozy Task checklist (Warm, Organic, Mint/Teal Accent)
+   -------------------------------------------------------------------------- */
+.theme-volunteer {
+  font-family: 'Outfit', 'Inter', sans-serif !important;
+  --bg-primary: #f0fdfa !important;
+  --bg-secondary: #ccfbf1 !important;
+  --card-bg: #ffffff !important;
+  --text-primary: #0f172a !important;
+  --text-secondary: #374151 !important;
+  --text-muted: #14b8a6 !important;
+  --border-color: #e2f4f1 !important;
+}
+.theme-volunteer.dark, .dark .theme-volunteer {
+  --bg-primary: #041211 !important;
+  --bg-secondary: #08221f !important;
+  --card-bg: #0b2e2a !important;
+  --border-color: #174c47 !important;
+  --text-primary: #f0fdfa !important;
+  --text-secondary: #cbd5e1 !important;
+  --text-muted: #2dd4bf !important;
+}
+
+/* Volunteer Warm Minty Background Mesh */
+.theme-volunteer.bg-mesh, .theme-volunteer .bg-mesh {
+  background-color: #f0fdfa !important;
+  background-image:
+    radial-gradient(at 0% 0%, rgba(45, 212, 191, 0.16) 0px, transparent 55%),
+    radial-gradient(at 100% 0%, rgba(16, 185, 129, 0.12) 0px, transparent 50%),
+    radial-gradient(at 50% 100%, rgba(254, 240, 138, 0.15) 0px, transparent 50%) !important;
+}
+.theme-volunteer.dark .bg-mesh, .dark.theme-volunteer .bg-mesh {
+  background-color: #041211 !important;
+  background-image:
+    radial-gradient(at 0% 0%, rgba(13, 148, 136, 0.22) 0px, transparent 55%),
+    radial-gradient(at 100% 0%, rgba(15, 118, 110, 0.16) 0px, transparent 50%),
+    radial-gradient(at 50% 100%, rgba(4, 47, 46, 0.35) 0px, transparent 50%) !important;
+}
+
+/* Volunteer Cozy Glass Card */
+.theme-volunteer .glass-card {
+  background: var(--card-bg) !important;
+  border: 2px solid var(--border-color) !important;
+  box-shadow: 0 10px 25px -5px rgba(20, 184, 166, 0.06) !important;
+  border-radius: 20px !important;
+  backdrop-filter: blur(12px) !important;
+}
+.theme-volunteer .glass-card:hover {
+  box-shadow: 0 15px 30px -5px rgba(20, 184, 166, 0.14) !important;
+  border-color: rgba(20, 184, 166, 0.35) !important;
+  transform: translateY(-2px) scale(1.005);
+}
+
+/* Volunteer Cozy Input */
+.theme-volunteer .glass-input {
+  background: var(--card-bg) !important;
+  border: 2px solid var(--border-color) !important;
+  border-radius: 14px !important;
+  padding: 12px 18px !important;
+  box-shadow: 0 4px 10px rgba(20, 184, 166, 0.03) !important;
+  transition: all 0.3s ease;
+}
+.theme-volunteer .glass-input:focus {
+  border-color: #14b8a6 !important;
+  box-shadow: 0 0 12px rgba(20, 184, 166, 0.15) !important;
+}
+
+/* Volunteer Friendly Bubble Buttons */
+.theme-volunteer .glass-button {
+  background: linear-gradient(135deg, #0d9488, #10b981) !important;
+  border-radius: 14px !important;
+  font-weight: 750 !important;
+  box-shadow: 0 6px 18px rgba(13, 148, 136, 0.18) !important;
+  border: none !important;
+}
+.theme-volunteer .glass-button:hover {
+  background: linear-gradient(135deg, #0f766e, #059669) !important;
+  box-shadow: 0 8px 24px rgba(13, 148, 136, 0.28) !important;
+  transform: translateY(-2px) scale(1.02) !important;
+}
+
+/* Volunteer Cozy Sidebar Active */
+.theme-volunteer aside a.active {
+  background: linear-gradient(135deg, rgba(13, 148, 136, 0.08), rgba(16, 185, 129, 0.08)) !important;
+  border-radius: 16px !important;
+  color: #0d9488 !important;
+}
+.theme-volunteer aside a {
+  border-radius: 16px !important;
+}
+
+/* Volunteer Scrollbar Customization */
+.theme-volunteer ::-webkit-scrollbar-thumb {
+  background: rgba(20, 184, 166, 0.35) !important;
+  border-radius: 10px !important;
+}
+.theme-volunteer ::-webkit-scrollbar-thumb:hover {
+  background: rgba(16, 185, 129, 0.6) !important;
+}
+
+
+/* --------------------------------------------------------------------------
+   3. HOD THEME: Executive SaaS Dashboard (Clean, Corporate, Professional Blue)
+   -------------------------------------------------------------------------- */
+.theme-hod {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
+  --bg-primary: #f8fafc !important;
+  --bg-secondary: #f1f5f9 !important;
+  --card-bg: #ffffff !important;
+  --text-primary: #0f172a !important;
+  --text-secondary: #475569 !important;
+  --text-muted: #2563eb !important;
+  --border-color: #e2e8f0 !important;
+}
+.theme-hod.dark, .dark .theme-hod {
+  --bg-primary: #0b0f19 !important;
+  --bg-secondary: #111726 !important;
+  --card-bg: #161e31 !important;
+  --border-color: #242f4c !important;
+  --text-primary: #f8fafc !important;
+  --text-secondary: #94a3b8 !important;
+  --text-muted: #3b82f6 !important;
+}
+
+/* HOD Executive Background Mesh */
+.theme-hod.bg-mesh, .theme-hod .bg-mesh {
+  background-color: #f8fafc !important;
+  background-image:
+    radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.08) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(30, 58, 138, 0.05) 0px, transparent 50%) !important;
+}
+.theme-hod.dark .bg-mesh, .dark.theme-hod .bg-mesh {
+  background-color: #0b0f19 !important;
+  background-image:
+    radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.14) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(22, 30, 49, 0.3) 0px, transparent 50%) !important;
+}
+
+/* HOD Clean Corporate Card */
+.theme-hod .glass-card {
+  background: var(--card-bg) !important;
+  border: 1px solid var(--border-color) !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.04), 0 2px 4px -1px rgba(0, 0, 0, 0.02) !important;
+  border-radius: 12px !important;
+  backdrop-filter: none !important;
+}
+.theme-hod .glass-card:hover {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04) !important;
+  border-color: rgba(59, 130, 246, 0.35) !important;
+  transform: translateY(-1px);
+}
+
+/* HOD Clean Input */
+.theme-hod .glass-input {
+  background: var(--card-bg) !important;
+  border: 1px solid var(--border-color) !important;
+  border-radius: 8px !important;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.02) !important;
+  transition: all 0.2s ease;
+}
+.theme-hod .glass-input:focus {
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15) !important;
+}
+
+/* HOD Executive Button */
+.theme-hod .glass-button {
+  background: #2563eb !important;
+  border-radius: 8px !important;
+  font-weight: 600 !important;
+  box-shadow: 0 2px 4px rgba(37, 99, 235, 0.08) !important;
+  border: 1px solid #1d4ed8 !important;
+}
+.theme-hod .glass-button:hover {
+  background: #1d4ed8 !important;
+  box-shadow: 0 4px 8px rgba(37, 99, 235, 0.18) !important;
+  transform: translateY(-1px) !important;
+}
+
+/* HOD Corporate Sidebar Active */
+.theme-hod aside a.active {
+  background: rgba(59, 130, 246, 0.08) !important;
+  border-radius: 8px !important;
+  color: #2563eb !important;
+  font-weight: 600 !important;
+}
+.theme-hod aside a {
+  border-radius: 8px !important;
+}
+
+/* HOD Scrollbar Customization */
+.theme-hod ::-webkit-scrollbar-thumb {
+  background: rgba(59, 130, 246, 0.35) !important;
+  border-radius: 6px !important;
+}
+.theme-hod ::-webkit-scrollbar-thumb:hover {
+  background: rgba(37, 99, 235, 0.6) !important;
+}
+
+/* --------------------------------------------------------------------------
+   4. LOGIN PAGE THEMATIC OVERRIDES
+   -------------------------------------------------------------------------- */
+.theme-admin .login-bg {
+  background: linear-gradient(-45deg, #05020d, #0d061f, #1e0b3c, #0d061f, #05020d) !important;
+}
+.theme-admin .login-orb:nth-child(1) { background: rgba(139, 92, 246, 0.45) !important; }
+.theme-admin .login-orb:nth-child(2) { background: rgba(236, 72, 153, 0.4) !important; }
+
+.theme-volunteer .login-bg {
+  background: linear-gradient(-45deg, #f0fdfa, #ccfbf1, #99f6e4, #ccfbf1, #f0fdfa) !important;
+}
+.theme-volunteer.dark .login-bg, .dark.theme-volunteer .login-bg {
+  background: linear-gradient(-45deg, #031412, #0b2e2a, #115e56, #0b2e2a, #031412) !important;
+}
+.theme-volunteer .login-orb:nth-child(1) { background: rgba(20, 184, 166, 0.25) !important; }
+.theme-volunteer .login-orb:nth-child(2) { background: rgba(16, 185, 129, 0.2) !important; }
+
+.theme-hod .login-bg {
+  background: linear-gradient(-45deg, #f8fafc, #f1f5f9, #dbeafe, #f1f5f9, #f8fafc) !important;
+}
+.theme-hod.dark .login-bg, .dark.theme-hod .login-bg {
+  background: linear-gradient(-45deg, #0b0f19, #111726, #1e293b, #111726, #0b0f19) !important;
+}
+.theme-hod .login-orb:nth-child(1) { background: rgba(59, 130, 246, 0.2) !important; }
+.theme-hod .login-orb:nth-child(2) { background: rgba(30, 58, 138, 0.15) !important; }
+

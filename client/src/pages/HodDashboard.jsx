@@ -37,30 +37,39 @@ function HodDashboard() {
   const [departmentData, setDepartmentData] = useState([]);
   const [activities, setActivities] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [selectedDepartment, setSelectedDepartment] = useState('');
+  const [selectedDepartment, setSelectedDepartment] = useState(user?.department || '');
 
-  const fetchDashboardData = useCallback(async () => {
+  // Default to HOD's department when user loads
+  useEffect(() => {
+    if (user?.department) {
+      setSelectedDepartment(user.department);
+    }
+  }, [user]);
+
+  const fetchDashboardData = useCallback(async (showSpinner = false) => {
     try {
-      setLoading(true);
+      if (showSpinner) setLoading(true);
       const [statsRes, deptRes] = await Promise.all([
-        getStats(),
+        getStats(selectedDepartment),
         getDepartmentProgress(),
       ]);
       setStats(statsRes.data.stats || statsRes.data);
       setDepartmentData(deptRes.data.departments || deptRes.data || []);
-      if (statsRes.data.recentActivities) {
+      if (statsRes.data.recentActivity) {
+        setActivities(statsRes.data.recentActivity);
+      } else if (statsRes.data.recentActivities) {
         setActivities(statsRes.data.recentActivities);
       }
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
       addToast('error', 'Failed to load dashboard data');
     } finally {
-      setLoading(false);
+      if (showSpinner) setLoading(false);
     }
-  }, [addToast]);
+  }, [addToast, selectedDepartment]);
 
   useEffect(() => {
-    fetchDashboardData();
+    fetchDashboardData(true);
   }, [fetchDashboardData]);
 
   // Socket.IO listeners for real-time updates
@@ -68,8 +77,7 @@ function HodDashboard() {
     if (!socket) return;
 
     const handleStudentUpdated = (data) => {
-      fetchDashboardData();
-      setActivities(prev => [data, ...prev].slice(0, 20));
+      fetchDashboardData(false);
     };
 
     const handleNewActivity = (activity) => {
@@ -85,10 +93,10 @@ function HodDashboard() {
     };
   }, [socket, fetchDashboardData]);
 
-  const totalStudents = stats?.total || stats?.totalStudents || 0;
-  const completed = stats?.completed || 0;
-  const inProgress = stats?.inProgress || 0;
-  const pending = stats?.pending || totalStudents - completed - inProgress;
+  const totalStudents = stats?.totalStudents || stats?.total || 0;
+  const completed = stats?.completedStudents || stats?.completed || 0;
+  const inProgress = stats?.inProgressStudents || stats?.inProgress || 0;
+  const pending = stats?.pendingStudents || stats?.pending || totalStudents - completed - inProgress;
   const completionRate = totalStudents > 0 ? Math.round((completed / totalStudents) * 100) : 0;
 
   const pieData = [
@@ -130,6 +138,8 @@ function HodDashboard() {
     addToast('success', 'PDF report downloaded successfully');
   };
 
+
+
   return (
     <DashboardLayout>
       {/* Header */}
@@ -168,8 +178,8 @@ function HodDashboard() {
 
       {loading ? (
         <div className="space-y-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {Array.from({ length: 4 }).map((_, i) => (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+            {Array.from({ length: 5 }).map((_, i) => (
               <SkeletonLoader key={i} variant="stat-card" />
             ))}
           </div>
@@ -181,13 +191,11 @@ function HodDashboard() {
       ) : (
         <div className="space-y-6 stagger-children">
           {/* Stat Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
             <StatCard
-              title="Total Students"
+              title="Dept Students"
               value={totalStudents}
               icon={Users}
-              trend="up"
-              trendValue="+12%"
               color="primary"
               delay={0}
             />
@@ -195,8 +203,6 @@ function HodDashboard() {
               title="Completed"
               value={completed}
               icon={CheckCircle}
-              trend="up"
-              trendValue="+8%"
               color="success"
               delay={100}
             />
@@ -211,10 +217,15 @@ function HodDashboard() {
               title="Pending"
               value={pending > 0 ? pending : 0}
               icon={AlertTriangle}
-              trend="down"
-              trendValue="-5%"
               color="warning"
               delay={300}
+            />
+            <StatCard
+              title="Total College Students"
+              value={stats?.totalCollegeStudents || 0}
+              icon={Users}
+              color="primary"
+              delay={400}
             />
           </div>
 

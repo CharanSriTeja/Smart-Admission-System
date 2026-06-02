@@ -37,7 +37,7 @@ function StudentTimeline({ student }) {
           const isLast = index === TIMELINE_STEPS.length - 1;
           const Icon = step.icon;
           const updatedBy = student[`${step.key}By`];
-          const updatedAt = student[`${step.key}At`] || (isCompleted ? student.updatedAt : null);
+          const updatedAt = student[`${step.key}At`] || (isCompleted ? (student.createdAt || student.updatedAt) : null);
 
           return (
             <div key={step.key} className="relative flex gap-4 pb-8 last:pb-0">

@@ -30,17 +30,31 @@ const seedUsers = [
   },
   {
     name: 'Dr. Sharma',
-    email: 'hod.ece@college.edu',
+    email: 'hod.aiml@college.edu',
     password: 'hod123',
     role: 'HOD',
-    department: 'ECE',
+    department: 'AIML',
   },
   {
     name: 'Priya',
-    email: 'volunteer.ece@college.edu',
+    email: 'volunteer.aiml@college.edu',
     password: 'vol123',
     role: 'Volunteer',
-    department: 'ECE',
+    department: 'AIML',
+  },
+  {
+    name: 'Dr. Rao',
+    email: 'hod.cic@college.edu',
+    password: 'hod123',
+    role: 'HOD',
+    department: 'CIC',
+  },
+  {
+    name: 'Siddharth',
+    email: 'volunteer.cic@college.edu',
+    password: 'vol123',
+    role: 'Volunteer',
+    department: 'CIC',
   },
 ];
 
@@ -62,7 +76,7 @@ const LAST_NAMES = [
   'Pillai', 'Prasad', 'Raju', 'Srinivas', 'Tiwari',
 ];
 
-const DEPARTMENTS = ['CSE', 'ECE', 'EEE', 'MECH', 'CIVIL'];
+const DEPARTMENTS = ['CSE', 'AIML', 'CIC'];
 const CATEGORIES = ['OC', 'BC-A', 'BC-B', 'BC-C', 'BC-D', 'SC', 'ST'];
 const GENDERS = ['Male', 'Female', 'Other'];
 const REGIONS = ['AU', 'SVU', 'OU'];
@@ -204,8 +218,10 @@ const seed = async () => {
     console.log('📋 Login credentials:');
     console.log('  HOD CSE      → hod@college.edu       / hod123');
     console.log('  Volunteer CSE→ volunteer@college.edu  / vol123');
-    console.log('  HOD ECE      → hod.ece@college.edu   / hod123');
-    console.log('  Volunteer ECE→ volunteer.ece@college.edu / vol123');
+    console.log('  HOD AIML     → hod.aiml@college.edu  / hod123');
+    console.log('  Volunteer AIML→ volunteer.aiml@college.edu / vol123');
+    console.log('  HOD CIC      → hod.cic@college.edu   / hod123');
+    console.log('  Volunteer CIC→ volunteer.cic@college.edu / vol123');
   } catch (error) {
     console.error('💥 Seed failed:', error);
   } finally {

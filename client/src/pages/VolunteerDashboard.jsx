@@ -12,6 +12,11 @@ import { getStudents, updateStudentStatus } from '../services/studentService';
 import { getGreeting, calculateCompletionPercentage, timeAgo } from '../utils/helpers';
 import { STEP_LABELS } from '../utils/constants';
 
+const isStudentMatch = (student, targetId) => {
+  if (!targetId || !student) return false;
+  return (student._id && student._id === targetId) || (student.id && student.id === targetId);
+};
+
 function VolunteerDashboard() {
   const { user } = useAuth();
   const { socket } = useSocket();
@@ -26,64 +31,121 @@ function VolunteerDashboard() {
 
   const debouncedSearch = useDebounce(searchTerm, 300);
 
-  const fetchStudents = useCallback(async (search = '') => {
+  const fetchStudents = useCallback(async (search = '', showSpinner = false) => {
     try {
-      setLoading(true);
-      const params = { limit: 20, status: 'pending' };
+      if (showSpinner) setLoading(true);
+      const params = { limit: 20, status: 'incomplete' };
       if (search) params.search = search;
-      const res = await getStudents(params);
+
+      const [res, recentRes, completedRes, incompleteRes] = await Promise.all([
+        getStudents(params),
+        getStudents({ limit: 10, sort: '-updatedAt' }),
+        getStudents({ limit: 1, status: 'completed' }),
+        getStudents({ limit: 1, status: 'incomplete' })
+      ]);
+
       const students = res.data.students || res.data.data || [];
       setPendingStudents(students);
-
-      // Fetch recently updated
-      const recentRes = await getStudents({ limit: 10, sort: '-updatedAt' });
       setRecentUpdates(recentRes.data.students || recentRes.data.data || []);
 
-      // Calculate stats
-      const completedCount = students.filter(s => calculateCompletionPercentage(s) === 100).length;
-      const pendingCount = students.filter(s => calculateCompletionPercentage(s) < 100).length;
-      setStats({ pendingToday: pendingCount, completedToday: completedCount });
+      const completedCount = completedRes.data.pagination?.total || 0;
+      const incompleteCount = incompleteRes.data.pagination?.total || 0;
+      setStats({ pendingToday: incompleteCount, completedToday: completedCount });
     } catch (error) {
       console.error('Error fetching students:', error);
       addToast('error', 'Failed to load student data');
     } finally {
-      setLoading(false);
+      if (showSpinner) setLoading(false);
     }
   }, [addToast]);
 
   useEffect(() => {
-    fetchStudents(debouncedSearch);
+    fetchStudents(debouncedSearch, true);
   }, [debouncedSearch, fetchStudents]);
 
   // Socket.IO for live updates
   useEffect(() => {
     if (!socket) return;
 
-    const handleUpdate = () => {
-      fetchStudents(debouncedSearch);
+    const handleUpdate = (updatedStudent) => {
+      if (!updatedStudent) return;
+
+      // 1. Update pending list in-place
+      setPendingStudents(prev => {
+        const exists = prev.some(s => isStudentMatch(s, updatedStudent._id || updatedStudent.id));
+        if (exists) {
+          return prev.map(s => isStudentMatch(s, updatedStudent._id || updatedStudent.id) ? { ...s, ...updatedStudent } : s);
+        } else {
+          // If the student is incomplete and belongs to our department, add it to the list
+          const isOurDept = updatedStudent.department === user?.department;
+          const isIncomplete = calculateCompletionPercentage(updatedStudent) < 100;
+          if (isOurDept && isIncomplete) {
+            return [updatedStudent, ...prev];
+          }
+          return prev;
+        }
+      });
+
+      // 2. Update recent updates list in-place
+      setRecentUpdates(prev => {
+        const exists = prev.some(s => isStudentMatch(s, updatedStudent._id || updatedStudent.id));
+        if (exists) {
+          return prev.map(s => isStudentMatch(s, updatedStudent._id || updatedStudent.id) ? { ...s, ...updatedStudent } : s);
+        } else {
+          return [updatedStudent, ...prev].slice(0, 10);
+        }
+      });
+
+      // 3. Update stats in-place or quick query
+      getStudents({ limit: 1, status: 'completed' }).then(completedRes => {
+        getStudents({ limit: 1, status: 'incomplete' }).then(incompleteRes => {
+          const completedCount = completedRes.data.pagination?.total || 0;
+          const incompleteCount = incompleteRes.data.pagination?.total || 0;
+          setStats({ pendingToday: incompleteCount, completedToday: completedCount });
+        });
+      });
+    };
+
+    const handleRefresh = () => {
+      fetchStudents(debouncedSearch, false);
     };
 
     socket.on('student:updated', handleUpdate);
-    return () => socket.off('student:updated', handleUpdate);
-  }, [socket, debouncedSearch, fetchStudents]);
+    socket.on('dashboard:refresh', handleRefresh);
+
+    return () => {
+      socket.off('student:updated', handleUpdate);
+      socket.off('dashboard:refresh', handleRefresh);
+    };
+  }, [socket, debouncedSearch, fetchStudents, user]);
 
   const handleStatusChange = async (studentId, field, value) => {
+    if (!studentId) return;
     setUpdatingId(studentId);
     try {
       await updateStudentStatus(studentId, { [field]: value });
       addToast('success', `${STEP_LABELS[field]} ${value ? 'completed' : 'reverted'}`);
 
-      // Update local state
+      // Update local state in-place immediately
       setPendingStudents(prev =>
         prev.map(s =>
-          (s._id === studentId || s.id === studentId) ? { ...s, [field]: value } : s
+          isStudentMatch(s, studentId) ? { ...s, [field]: value } : s
         )
       );
       setRecentUpdates(prev =>
         prev.map(s =>
-          (s._id === studentId || s.id === studentId) ? { ...s, [field]: value } : s
+          isStudentMatch(s, studentId) ? { ...s, [field]: value } : s
         )
       );
+
+      // Trigger background stats refresh
+      getStudents({ limit: 1, status: 'completed' }).then(completedRes => {
+        getStudents({ limit: 1, status: 'incomplete' }).then(incompleteRes => {
+          const completedCount = completedRes.data.pagination?.total || 0;
+          const incompleteCount = incompleteRes.data.pagination?.total || 0;
+          setStats({ pendingToday: incompleteCount, completedToday: completedCount });
+        });
+      });
     } catch (error) {
       addToast('error', 'Failed to update status');
     } finally {

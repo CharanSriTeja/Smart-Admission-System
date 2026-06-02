@@ -25,6 +25,39 @@ function ActivityFeed({ activities = [] }) {
     return ACTION_ICONS.default;
   };
 
+  const getActionMessage = (activity) => {
+    if (activity.message || activity.description) {
+      return activity.message || activity.description;
+    }
+    const studentName = activity.studentId?.name || activity.studentName || 'a student';
+    if (activity.action === 'STUDENT_CREATED') {
+      return `registered new student ${studentName}`;
+    }
+    if (activity.action === 'STUDENT_DELETED') {
+      return `removed student ${studentName}`;
+    }
+    if (activity.action === 'STATUS_UPDATE') {
+      const updates = [];
+      const oldVal = activity.oldValue || {};
+      const newVal = activity.newValue || {};
+      
+      if (newVal.selfReported !== oldVal.selfReported) {
+        updates.push(newVal.selfReported ? 'completed Self Reporting' : 'reverted Self Reporting');
+      }
+      if (newVal.documentsSubmitted !== oldVal.documentsSubmitted) {
+        updates.push(newVal.documentsSubmitted ? 'submitted Documents' : 'reverted Documents');
+      }
+      if (newVal.formFilled !== oldVal.formFilled) {
+        updates.push(newVal.formFilled ? 'completed Form' : 'reverted Form');
+      }
+      if (updates.length > 0) {
+        return `${updates.join(', ')} for ${studentName}`;
+      }
+      return `updated status for ${studentName}`;
+    }
+    return `updated student ${studentName}`;
+  };
+
   if (!activities.length) {
     return (
       <div className="glass-card p-6">
@@ -65,10 +98,12 @@ function ActivityFeed({ activities = [] }) {
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm text-gray-800 dark:text-gray-200 leading-snug">
-                  <span className="font-semibold">{activity.user?.name || activity.userName || 'System'}</span>
+                  <span className="font-semibold">
+                    {activity.updatedBy?.name || activity.user?.name || activity.userName || 'System'}
+                  </span>
                   {' '}
                   <span className="text-gray-500 dark:text-gray-400">
-                    {activity.message || activity.description || `updated ${activity.studentName || 'a student'}`}
+                    {getActionMessage(activity)}
                   </span>
                 </p>
                 <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">

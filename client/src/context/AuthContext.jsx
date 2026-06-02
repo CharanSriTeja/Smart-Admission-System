@@ -19,7 +19,11 @@ export function AuthProvider({ children }) {
       }
       try {
         const response = await api.get('/auth/me');
-        setUser(response.data.user || response.data);
+        const userData = response.data.user || response.data;
+        if (userData && userData.role) {
+          userData.role = userData.role.toLowerCase();
+        }
+        setUser(userData);
         setToken(storedToken);
       } catch (error) {
         console.error('Token validation failed:', error);
@@ -33,13 +37,31 @@ export function AuthProvider({ children }) {
     validateToken();
   }, []);
 
+  // Sync role-based theme classes to the document element
+  useEffect(() => {
+    const root = document.documentElement;
+    root.classList.remove('theme-admin', 'theme-volunteer', 'theme-hod');
+    
+    if (user && user.role) {
+      root.classList.add(`theme-${user.role.toLowerCase()}`);
+    } else {
+      // Default theme (e.g. Volunteer Teal theme) for landing/unauthenticated state
+      root.classList.add('theme-volunteer');
+    }
+  }, [user]);
+
   const login = useCallback(async (email, password) => {
     const response = await api.post('/auth/login', { email, password });
     const { token: newToken, user: userData } = response.data;
+    if (userData && userData.role) {
+      userData.role = userData.role.toLowerCase();
+    }
     localStorage.setItem('token', newToken);
     setToken(newToken);
     setUser(userData);
-    if (userData.role === 'hod') {
+    if (userData.role === 'admin') {
+      navigate('/admin');
+    } else if (userData.role === 'hod') {
       navigate('/hod/dashboard');
     } else {
       navigate('/volunteer/dashboard');

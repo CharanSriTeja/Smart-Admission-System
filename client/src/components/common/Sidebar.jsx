@@ -48,21 +48,19 @@ function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose }) {
             to={link.to}
             onClick={onMobileClose}
             className={({ isActive }) =>
-              `group flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 ${
-                isActive
-                  ? 'bg-gradient-to-r from-primary-500/10 to-primary-600/10 text-primary-600 dark:from-primary-500/20 dark:to-primary-600/20 dark:text-primary-400 shadow-sm'
-                  : 'text-gray-600 dark:text-gray-400 hover:bg-white/40 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-gray-200'
+              `group flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 ${isActive
+                ? 'bg-gradient-to-r from-primary-500/10 to-primary-600/10 text-primary-600 dark:from-primary-500/20 dark:to-primary-600/20 dark:text-primary-400 shadow-sm'
+                : 'text-gray-600 dark:text-gray-400 hover:bg-white/40 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-gray-200'
               }`
             }
           >
             {({ isActive }) => (
               <>
                 <div
-                  className={`p-1.5 rounded-lg transition-all duration-200 ${
-                    isActive
-                      ? 'bg-gradient-to-br from-primary-500 to-primary-600 text-white shadow-md shadow-primary-500/25'
-                      : 'text-gray-500 dark:text-gray-400 group-hover:text-primary-500'
-                  }`}
+                  className={`p-1.5 rounded-lg transition-all duration-200 ${isActive
+                    ? 'bg-gradient-to-br from-primary-500 to-primary-600 text-white shadow-md shadow-primary-500/25'
+                    : 'text-gray-500 dark:text-gray-400 group-hover:text-primary-500'
+                    }`}
                 >
                   <link.icon className="w-4 h-4" />
                 </div>
@@ -86,7 +84,7 @@ function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose }) {
               AdmitTrack v1.0.0
             </p>
             <p className="text-xs text-gray-400 dark:text-gray-600 mt-0.5">
-              © 2024 Smart Admissions
+              © 2026 SRKR Smart Admit
             </p>
           </div>
         </div>
@@ -121,9 +119,8 @@ function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose }) {
 
       {/* Mobile sidebar */}
       <aside
-        className={`lg:hidden fixed top-0 left-0 h-full z-50 w-72 transform transition-transform duration-300 ease-in-out ${
-          mobileOpen ? 'translate-x-0' : '-translate-x-full'
-        }`}
+        className={`lg:hidden fixed top-0 left-0 h-full z-50 w-72 transform transition-transform duration-300 ease-in-out ${mobileOpen ? 'translate-x-0' : '-translate-x-full'
+          }`}
       >
         <div className="h-full glass dark:glass-dark border-r border-white/20 dark:border-primary-400/10">
           {sidebarContent}
@@ -132,9 +129,8 @@ function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose }) {
 
       {/* Desktop sidebar */}
       <aside
-        className={`hidden lg:block flex-shrink-0 h-[calc(100vh-4rem)] sticky top-16 transition-all duration-300 ${
-          collapsed ? 'w-[72px]' : 'w-64'
-        }`}
+        className={`hidden lg:block flex-shrink-0 h-[calc(100vh-4rem)] sticky top-16 transition-all duration-300 ${collapsed ? 'w-[72px]' : 'w-64'
+          }`}
       >
         <div className="h-full glass dark:glass-dark border-r border-white/20 dark:border-primary-400/10 overflow-y-auto">
           {sidebarContent}

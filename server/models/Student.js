@@ -74,13 +74,37 @@ const studentSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    selfReportedAt: {
+      type: Date,
+      default: null,
+    },
+    selfReportedBy: {
+      type: String,
+      default: "",
+    },
     documentsSubmitted: {
       type: Boolean,
       default: false,
     },
+    documentsSubmittedAt: {
+      type: Date,
+      default: null,
+    },
+    documentsSubmittedBy: {
+      type: String,
+      default: "",
+    },
     formFilled: {
       type: Boolean,
       default: false,
+    },
+    formFilledAt: {
+      type: Date,
+      default: null,
+    },
+    formFilledBy: {
+      type: String,
+      default: "",
     },
 
     // ── Computed / derived ────────────────────────────────────────────
@@ -145,6 +169,20 @@ studentSchema.pre("save", function preSaveComputeCompletion(next) {
     this.completedAt = new Date();
   } else if (completedSteps < 3) {
     this.completedAt = null;
+  }
+
+  // Auto-backfill missing step timestamps for completed steps
+  if (this.selfReported && !this.selfReportedAt) {
+    this.selfReportedAt = this.createdAt || new Date();
+    this.selfReportedBy = this.selfReportedBy || "System (Imported)";
+  }
+  if (this.documentsSubmitted && !this.documentsSubmittedAt) {
+    this.documentsSubmittedAt = this.createdAt || new Date();
+    this.documentsSubmittedBy = this.documentsSubmittedBy || "System (Imported)";
+  }
+  if (this.formFilled && !this.formFilledAt) {
+    this.formFilledAt = this.createdAt || new Date();
+    this.formFilledBy = this.formFilledBy || "System (Imported)";
   }
 
   next();
