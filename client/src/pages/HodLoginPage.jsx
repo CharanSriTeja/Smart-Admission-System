@@ -58,7 +58,7 @@ function HodLoginPage() {
     setIsLoading(true);
     setLoginError("");
     try {
-      await login(data.email, data.password);
+      await login(data.email, data.password, 'HOD');
       addToast("success", "Welcome back! Login successful.");
     } catch (error) {
       const message =
@@ -72,10 +72,6 @@ function HodLoginPage() {
 
   return (
     <div className="login-bg min-h-screen flex items-center justify-center p-4 relative">
-      {/* Floating Orbs */}
-      <div className="login-orb" />
-      <div className="login-orb" />
-
       <div className="relative z-10 w-full max-w-md">
         {/* Back Button */}
         <button
@@ -87,10 +83,10 @@ function HodLoginPage() {
         </button>
 
         {/* Card */}
-        <div className="glass-card backdrop-blur-xl bg-white/40 dark:bg-primary-950/40 p-8 rounded-2xl shadow-xl border border-white/20">
+        <div className="glass-card p-8 rounded-lg shadow-sm">
           {/* Header */}
           <div className="text-center mb-8">
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white text-2xl font-bold mx-auto mb-4 shadow-lg shadow-blue-500/30">
+            <div className="w-14 h-14 rounded-lg bg-primary-600 flex items-center justify-center text-white text-2xl font-bold mx-auto mb-4 shadow-sm">
               <span>H</span>
             </div>
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
@@ -181,7 +177,7 @@ function HodLoginPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full glass-button py-3 rounded-xl font-semibold flex items-center justify-center gap-2 transition-all duration-200 hover:shadow-lg hover:shadow-blue-500/25 disabled:opacity-50 disabled:cursor-not-allowed mt-8"
+              className="w-full glass-button py-3 rounded-lg font-semibold flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed mt-8"
             >
               {isLoading ? (
                 <>

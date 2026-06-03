@@ -58,7 +58,7 @@ function VolunteerLoginPage() {
     setIsLoading(true);
     setLoginError("");
     try {
-      await login(data.email, data.password);
+      await login(data.email, data.password, 'Volunteer');
       addToast("success", "Welcome back! Login successful.");
     } catch (error) {
       const message =
@@ -72,10 +72,6 @@ function VolunteerLoginPage() {
 
   return (
     <div className="login-bg min-h-screen flex items-center justify-center p-4 relative">
-      {/* Floating Orbs */}
-      <div className="login-orb" />
-      <div className="login-orb" />
-
       <div className="relative z-10 w-full max-w-md">
         {/* Back Button */}
         <button
@@ -87,10 +83,10 @@ function VolunteerLoginPage() {
         </button>
 
         {/* Card */}
-        <div className="glass-card backdrop-blur-xl bg-white/40 dark:bg-primary-950/40 p-8 rounded-2xl shadow-xl border border-white/20">
+        <div className="glass-card p-8 rounded-lg shadow-sm">
           {/* Header */}
           <div className="text-center mb-8">
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center text-white text-2xl font-bold mx-auto mb-4 shadow-lg shadow-emerald-500/30">
+            <div className="w-14 h-14 rounded-lg bg-accent-600 flex items-center justify-center text-white text-2xl font-bold mx-auto mb-4 shadow-sm">
               <span>V</span>
             </div>
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
@@ -181,7 +177,7 @@ function VolunteerLoginPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full glass-button py-3 rounded-xl font-semibold flex items-center justify-center gap-2 transition-all duration-200 hover:shadow-lg hover:shadow-emerald-500/25 disabled:opacity-50 disabled:cursor-not-allowed mt-8"
+              className="w-full glass-button py-3 rounded-lg font-semibold flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed mt-8"
             >
               {isLoading ? (
                 <>
@@ -199,21 +195,21 @@ function VolunteerLoginPage() {
 
           {/* Footer */}
           <div className="mt-8 pt-6 border-t border-gray-200/50 dark:border-primary-400/10">
-            <p className="text-center text-sm text-gray-600 dark:text-gray-400">
-              Smart Admission Tracking & Verification System
+            <p className="text-center text-xs text-gray-600 dark:text-gray-400">
+              SRKREC EAPCET Smart Admission Tracking System
             </p>
           </div>
         </div>
 
         {/* Info Box */}
-        <div className="mt-6 p-4 glass-card rounded-xl border border-emerald-200/50 dark:border-emerald-400/20 bg-emerald-50/30 dark:bg-emerald-900/20">
+        {/* <div className="mt-6 p-4 glass-card rounded-xl border border-emerald-200/50 dark:border-emerald-400/20 bg-emerald-50/30 dark:bg-emerald-900/20">
           <p className="text-xs text-gray-600 dark:text-gray-400 text-center">
             <span className="font-semibold text-emerald-600 dark:text-emerald-400">
               Volunteer Features:
             </span>{" "}
             Search students, update status, track progress
           </p>
-        </div>
+        </div> */}
       </div>
     </div>
   );

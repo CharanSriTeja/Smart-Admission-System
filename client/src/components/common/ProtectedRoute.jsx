@@ -14,9 +14,13 @@ function ProtectedRoute({ children, allowedRoles }) {
     return <Navigate to="/login" replace />;
   }
 
-  if (allowedRoles && !allowedRoles.includes(user?.role)) {
+  if (allowedRoles && (!user?.role || !allowedRoles.map((r) => r.toLowerCase()).includes(user.role.toLowerCase()))) {
     // Redirect to appropriate dashboard based on role
-    if (user?.role === 'hod') {
+    const roleLC = user?.role?.toLowerCase();
+    if (roleLC === 'admin') {
+      return <Navigate to="/admin" replace />;
+    }
+    if (roleLC === 'hod') {
       return <Navigate to="/hod/dashboard" replace />;
     }
     return <Navigate to="/volunteer/dashboard" replace />;

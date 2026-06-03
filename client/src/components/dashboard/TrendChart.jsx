@@ -51,8 +51,8 @@ function TrendChart({ data = [] }) {
           <AreaChart data={chartData}>
             <defs>
               <linearGradient id="trendGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#6366f1" stopOpacity={0.3} />
-                <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
+                <stop offset="0%" stopColor="#3b82f6" stopOpacity={0.3} />
+                <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
               </linearGradient>
             </defs>
             <CartesianGrid
@@ -75,13 +75,13 @@ function TrendChart({ data = [] }) {
             <Area
               type="monotone"
               dataKey="count"
-              stroke="#6366f1"
+              stroke="#3b82f6"
               strokeWidth={3}
               fill="url(#trendGradient)"
               dot={false}
               activeDot={{
                 r: 6,
-                fill: '#6366f1',
+                fill: '#3b82f6',
                 stroke: '#fff',
                 strokeWidth: 2,
               }}

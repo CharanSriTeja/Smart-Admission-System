@@ -21,6 +21,12 @@ const errorHandler = (err, req, res, _next) => {
   let statusCode = err.statusCode || 500;
   let message = err.message || 'Internal Server Error';
 
+  // ── MongoDB/Mongoose connection or server selection error ──────────
+  if (err.name === 'MongooseServerSelectionError' || err.message?.includes('buffering timed out')) {
+    statusCode = 503;
+    message = 'Database connection failure. The database service is currently unavailable. Please verify that MongoDB is running.';
+  }
+
   // ── Mongoose validation error (e.g. required field missing) ────────
   if (err.name === 'ValidationError') {
     statusCode = 400;

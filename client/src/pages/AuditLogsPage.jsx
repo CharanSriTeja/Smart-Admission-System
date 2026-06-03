@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { FileText, Calendar, Download, Filter } from 'lucide-react';
+import { FileText, Calendar, Download, Filter, AlertCircle, RotateCcw } from 'lucide-react';
 import DashboardLayout from '../components/common/DashboardLayout';
 import AuditLogTable from '../components/audit/AuditLogTable';
 import LoadingSpinner from '../components/common/LoadingSpinner';
@@ -12,6 +12,7 @@ function AuditLogsPage() {
 
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState(null);
   const [pagination, setPagination] = useState({
     page: 1,
     limit: 20,
@@ -30,6 +31,7 @@ function AuditLogsPage() {
   const fetchLogs = useCallback(async () => {
     try {
       setLoading(true);
+      setFetchError(null);
       const params = {
         page: pagination.page,
         limit: pagination.limit,
@@ -58,7 +60,8 @@ function AuditLogsPage() {
       }
     } catch (error) {
       console.error('Error fetching logs:', error);
-      addToast('error', 'Failed to load audit logs');
+      setFetchError(error.message || 'Failed to load audit logs');
+      addToast('error', error.message || 'Failed to load audit logs');
     } finally {
       setLoading(false);
     }
@@ -211,7 +214,24 @@ function AuditLogsPage() {
       )}
 
       {/* Content */}
-      {loading ? (
+      {fetchError ? (
+        <div className="glass-card p-12 text-center border-l-4 border-l-red-500 max-w-xl mx-auto my-6 animate-scale-in">
+          <div className="w-12 h-12 rounded-xl bg-red-100 dark:bg-red-950/30 flex items-center justify-center text-red-600 dark:text-red-400 mx-auto mb-4">
+            <AlertCircle className="w-6 h-6" />
+          </div>
+          <h3 className="font-semibold text-gray-900 dark:text-white text-lg">Failed to Load Audit Logs</h3>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-2 mb-6">
+            {fetchError}
+          </p>
+          <button
+            onClick={() => fetchLogs()}
+            className="glass-button px-6 py-2.5 flex items-center gap-2 mx-auto font-medium hover:shadow-lg hover:shadow-red-500/10"
+          >
+            <RotateCcw className="w-4 h-4" />
+            Retry
+          </button>
+        </div>
+      ) : loading ? (
         <LoadingSpinner message="Loading audit logs..." />
       ) : (
         <AuditLogTable

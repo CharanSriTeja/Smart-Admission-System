@@ -10,6 +10,8 @@ import {
   Hash,
   Award,
   Building,
+  AlertCircle,
+  RotateCcw,
 } from "lucide-react";
 import DashboardLayout from "../components/common/DashboardLayout";
 import StudentTimeline from "../components/students/StudentTimeline";
@@ -41,10 +43,12 @@ function StudentDetailPage() {
   const [remarks, setRemarks] = useState("");
   const [statusChanges, setStatusChanges] = useState({});
   const [auditHistory, setAuditHistory] = useState([]);
+  const [fetchError, setFetchError] = useState(null);
 
   const fetchStudent = useCallback(async (showSpinner = false) => {
     try {
       if (showSpinner) setLoading(true);
+      setFetchError(null);
       const [studentRes, logsRes] = await Promise.all([
         getStudentById(id),
         getLogs({ student: id, limit: 20 }).catch(() => ({
@@ -62,7 +66,8 @@ function StudentDetailPage() {
       setAuditHistory(logsRes.data.logs || logsRes.data || []);
     } catch (error) {
       console.error("Error fetching student:", error);
-      addToast("error", "Failed to load student details");
+      setFetchError(error.message || "Failed to fetch student details");
+      addToast("error", error.message || "Failed to load student details");
     } finally {
       if (showSpinner) setLoading(false);
     }
@@ -96,6 +101,37 @@ function StudentDetailPage() {
     return (
       <DashboardLayout>
         <LoadingSpinner message="Loading student details..." />
+      </DashboardLayout>
+    );
+  }
+
+  if (fetchError) {
+    return (
+      <DashboardLayout>
+        <div className="glass-card p-12 text-center border-l-4 border-l-red-500 max-w-xl mx-auto my-6 animate-scale-in">
+          <div className="w-12 h-12 rounded-xl bg-red-100 dark:bg-red-950/30 flex items-center justify-center text-red-600 dark:text-red-400 mx-auto mb-4">
+            <AlertCircle className="w-6 h-6" />
+          </div>
+          <h3 className="font-semibold text-gray-900 dark:text-white text-lg">Failed to Load Details</h3>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-2 mb-6">
+            {fetchError}
+          </p>
+          <div className="flex gap-4 justify-center">
+            <button
+              onClick={() => fetchStudent(true)}
+              className="glass-button px-6 py-2.5 flex items-center gap-2 font-medium hover:shadow-lg hover:shadow-red-500/10"
+            >
+              <RotateCcw className="w-4 h-4" />
+              Retry
+            </button>
+            <button
+              onClick={() => navigate("/students")}
+              className="px-6 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+            >
+              Back to Students
+            </button>
+          </div>
+        </div>
       </DashboardLayout>
     );
   }

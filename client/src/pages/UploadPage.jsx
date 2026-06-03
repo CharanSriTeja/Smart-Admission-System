@@ -192,7 +192,10 @@ function UploadPage() {
                       <div className="mt-4 space-y-1.5 max-h-40 overflow-y-auto">
                         {results.errors.map((err, i) => (
                           <p key={i} className="text-xs text-red-600 dark:text-red-400 flex items-start gap-1.5">
-                            <span className="font-mono">Row {err.row || i + 1}:</span> {err.message || err}
+                            <span className="font-mono font-semibold">
+                              {err.hallTicketNumber ? `Ticket ${err.hallTicketNumber}` : `Row ${err.row || i + 1}`}:
+                            </span>{' '}
+                            {err.message || String(err)}
                           </p>
                         ))}
                       </div>

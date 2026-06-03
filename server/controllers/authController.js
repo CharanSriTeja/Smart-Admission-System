@@ -17,7 +17,7 @@ import config from '../config/env.js';
  */
 export const login = async (req, res, next) => {
   try {
-    const { email, password } = req.body;
+    const { email, password, role } = req.body;
 
     // Fetch user WITH the password field (select: false in schema)
     const user = await User.findOne({ email }).select('+password');
@@ -35,6 +35,14 @@ export const login = async (req, res, next) => {
       return res.status(401).json({
         success: false,
         message: 'Invalid email or password.',
+      });
+    }
+
+    // Role check (case-insensitive)
+    if (role && user.role.toUpperCase() !== role.toUpperCase()) {
+      return res.status(401).json({
+        success: false,
+        message: `Unauthorized. This account is registered as a ${user.role}, not a ${role}.`,
       });
     }
 

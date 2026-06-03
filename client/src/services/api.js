@@ -19,14 +19,23 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Response interceptor: handle 401 unauthorized
+// Response interceptor: handle 401 unauthorized and network offline errors
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response && error.response.status === 401) {
+    if (!error.response) {
+      // Network/Server offline error
+      error.message = 'Unable to connect to the server. Please verify your internet connection or check if the backend service is running.';
+      return Promise.reject(error);
+    }
+
+    if (error.response.status === 401) {
       localStorage.removeItem('token');
-      if (window.location.pathname !== '/login') {
-        window.location.href = '/login';
+      const isLoginRequest = error.config?.url?.includes('/auth/login');
+      const path = window.location.pathname;
+      // Do not redirect if we are logging in, at root landing page, at admin login panel, or on a page starting with /login
+      if (!isLoginRequest && path !== '/' && !path.startsWith('/login') && path !== '/admin') {
+        window.location.href = '/';
       }
     }
     return Promise.reject(error);

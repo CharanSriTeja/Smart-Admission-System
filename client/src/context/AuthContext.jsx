@@ -50,8 +50,8 @@ export function AuthProvider({ children }) {
     }
   }, [user]);
 
-  const login = useCallback(async (email, password) => {
-    const response = await api.post('/auth/login', { email, password });
+  const login = useCallback(async (email, password, role) => {
+    const response = await api.post('/auth/login', { email, password, role });
     const { token: newToken, user: userData } = response.data;
     if (userData && userData.role) {
       userData.role = userData.role.toLowerCase();

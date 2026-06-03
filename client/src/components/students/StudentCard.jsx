@@ -78,7 +78,7 @@ function StudentCard({ student, onStatusChange, showActions = true }) {
         </div>
         <button
           onClick={() => navigate(`/students/${student._id || student.id}`)}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-primary-600 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors opacity-0 group-hover:opacity-100"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-primary-600 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors"
         >
           <Eye className="w-3.5 h-3.5" />
           Details

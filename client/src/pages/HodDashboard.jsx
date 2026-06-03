@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Users, CheckCircle, Clock, AlertTriangle, Download, FileSpreadsheet, FileText } from 'lucide-react';
+import { Users, CheckCircle, Clock, AlertTriangle, Download, FileSpreadsheet, FileText, AlertCircle, RotateCcw } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import DashboardLayout from '../components/common/DashboardLayout';
 import StatCard from '../components/dashboard/StatCard';
@@ -37,6 +37,7 @@ function HodDashboard() {
   const [departmentData, setDepartmentData] = useState([]);
   const [activities, setActivities] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState(null);
   const [selectedDepartment, setSelectedDepartment] = useState(user?.department || '');
 
   // Default to HOD's department when user loads
@@ -49,6 +50,7 @@ function HodDashboard() {
   const fetchDashboardData = useCallback(async (showSpinner = false) => {
     try {
       if (showSpinner) setLoading(true);
+      setFetchError(null);
       const [statsRes, deptRes] = await Promise.all([
         getStats(selectedDepartment),
         getDepartmentProgress(),
@@ -62,7 +64,8 @@ function HodDashboard() {
       }
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
-      addToast('error', 'Failed to load dashboard data');
+      setFetchError(error.message || 'Failed to load dashboard data');
+      addToast('error', error.message || 'Failed to load dashboard data');
     } finally {
       if (showSpinner) setLoading(false);
     }
@@ -176,7 +179,24 @@ function HodDashboard() {
         </div>
       </div>
 
-      {loading ? (
+      {fetchError ? (
+        <div className="glass-card p-12 text-center border-l-4 border-l-red-500 max-w-xl mx-auto my-8 animate-scale-in">
+          <div className="w-12 h-12 rounded-xl bg-red-100 dark:bg-red-950/30 flex items-center justify-center text-red-600 dark:text-red-400 mx-auto mb-4">
+            <AlertCircle className="w-6 h-6" />
+          </div>
+          <h3 className="font-semibold text-gray-900 dark:text-white text-lg">Failed to Load Dashboard</h3>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-2 mb-6">
+            {fetchError}
+          </p>
+          <button
+            onClick={() => fetchDashboardData(true)}
+            className="glass-button px-6 py-2.5 flex items-center gap-2 mx-auto font-medium hover:shadow-lg hover:shadow-red-500/10"
+          >
+            <RotateCcw className="w-4 h-4" />
+            Retry
+          </button>
+        </div>
+      ) : loading ? (
         <div className="space-y-6">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
             {Array.from({ length: 5 }).map((_, i) => (

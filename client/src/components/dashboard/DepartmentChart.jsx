@@ -46,12 +46,12 @@ function DepartmentChart({ data = [] }) {
           <BarChart data={chartData} barCategoryGap="20%" barGap={4}>
             <defs>
               <linearGradient id="completedGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#22c55e" stopOpacity={0.9} />
-                <stop offset="100%" stopColor="#16a34a" stopOpacity={0.7} />
+                <stop offset="0%" stopColor="#3b82f6" stopOpacity={0.9} />
+                <stop offset="100%" stopColor="#1d4ed8" stopOpacity={0.7} />
               </linearGradient>
               <linearGradient id="pendingGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#f59e0b" stopOpacity={0.9} />
-                <stop offset="100%" stopColor="#d97706" stopOpacity={0.7} />
+                <stop offset="0%" stopColor="#f97316" stopOpacity={0.9} />
+                <stop offset="100%" stopColor="#ea580c" stopOpacity={0.7} />
               </linearGradient>
             </defs>
             <CartesianGrid

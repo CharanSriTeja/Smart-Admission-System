@@ -126,7 +126,14 @@ export const getStudents = async (req, res, next) => {
       }
     }
 
-    let queryChain = Student.find(filter).sort({ createdAt: -1 });
+    let sortObj = { createdAt: -1 };
+    if (req.query.sort) {
+      const sortField = req.query.sort.startsWith("-") ? req.query.sort.slice(1) : req.query.sort;
+      const sortOrder = req.query.sort.startsWith("-") ? -1 : 1;
+      sortObj = { [sortField]: sortOrder };
+    }
+
+    let queryChain = Student.find(filter).sort(sortObj);
     if (!all) {
       queryChain = queryChain.skip(skip).limit(limit);
     }

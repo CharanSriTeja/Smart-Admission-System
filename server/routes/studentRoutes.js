@@ -75,7 +75,35 @@ router.get('/:id', auth, getStudentById);
  * POST /api/students/upload
  * Bulk upload students from file (HOD only).
  */
-router.post('/upload', auth, authorize('HOD'), upload.single('file'), uploadStudents);
+router.post(
+  '/upload',
+  auth,
+  authorize('HOD'),
+  (req, res, next) => {
+    upload.single('file')(req, res, (err) => {
+      if (err) {
+        if (err instanceof multer.MulterError) {
+          if (err.code === 'LIMIT_FILE_SIZE') {
+            return res.status(400).json({
+              success: false,
+              message: 'File size limit exceeded. Maximum size allowed is 10MB.',
+            });
+          }
+          return res.status(400).json({
+            success: false,
+            message: `File upload error: ${err.message}`,
+          });
+        }
+        return res.status(400).json({
+          success: false,
+          message: err.message,
+        });
+      }
+      next();
+    });
+  },
+  uploadStudents
+);
 
 /**
  * PUT /api/students/:id/status

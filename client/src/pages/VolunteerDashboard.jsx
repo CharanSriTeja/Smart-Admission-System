@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Search, CheckCircle, Clock, UserCheck, FileText, FilePlus } from 'lucide-react';
+import { Search, CheckCircle, Clock, UserCheck, FileText, FilePlus, AlertCircle, RotateCcw } from 'lucide-react';
 import DashboardLayout from '../components/common/DashboardLayout';
 import StatCard from '../components/dashboard/StatCard';
 import StatusToggle from '../components/students/StatusToggle';
@@ -26,6 +26,7 @@ function VolunteerDashboard() {
   const [pendingStudents, setPendingStudents] = useState([]);
   const [recentUpdates, setRecentUpdates] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState(null);
   const [updatingId, setUpdatingId] = useState(null);
   const [stats, setStats] = useState({ pendingToday: 0, completedToday: 0 });
 
@@ -34,6 +35,7 @@ function VolunteerDashboard() {
   const fetchStudents = useCallback(async (search = '', showSpinner = false) => {
     try {
       if (showSpinner) setLoading(true);
+      setFetchError(null);
       const params = { limit: 20, status: 'incomplete' };
       if (search) params.search = search;
 
@@ -53,7 +55,8 @@ function VolunteerDashboard() {
       setStats({ pendingToday: incompleteCount, completedToday: completedCount });
     } catch (error) {
       console.error('Error fetching students:', error);
-      addToast('error', 'Failed to load student data');
+      setFetchError(error.message || 'Failed to load student data');
+      addToast('error', error.message || 'Failed to load student data');
     } finally {
       if (showSpinner) setLoading(false);
     }
@@ -211,7 +214,7 @@ function VolunteerDashboard() {
           <div className="w-12 h-1.5 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden">
             <div
               className={`h-full rounded-full transition-all duration-500 ${
-                completion >= 100 ? 'bg-emerald-500' : completion > 0 ? 'bg-blue-500' : 'bg-gray-300'
+                completion >= 100 ? 'bg-emerald-500' : completion > 0 ? 'bg-primary-500' : 'bg-gray-300'
               }`}
               style={{ width: `${completion}%` }}
             />
@@ -240,13 +243,13 @@ function VolunteerDashboard() {
 
       {/* Prominent Search Bar */}
       <div className="relative max-w-2xl mx-auto mb-8">
-        <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-6 h-6 text-gray-400" />
+        <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
         <input
           type="text"
           placeholder="Search students by name or hall ticket number..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full bg-white/80 dark:bg-primary-950/50 backdrop-blur-xl border-2 border-gray-200/60 dark:border-primary-400/15 rounded-2xl pl-14 pr-6 py-4 text-lg outline-none transition-all duration-300 focus:border-primary-400 focus:ring-4 focus:ring-primary-400/10 dark:focus:ring-primary-400/20 text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 shadow-lg shadow-black/5"
+          className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg pl-14 pr-6 py-3.5 text-base outline-none transition-colors focus:border-primary-500 focus:ring-2 focus:ring-primary-500/15 text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 shadow-sm"
         />
       </div>
 
@@ -266,7 +269,24 @@ function VolunteerDashboard() {
         />
       </div>
 
-      {loading ? (
+      {fetchError ? (
+        <div className="glass-card p-12 text-center border-l-4 border-l-red-500 max-w-xl mx-auto my-8 animate-scale-in">
+          <div className="w-12 h-12 rounded-xl bg-red-100 dark:bg-red-950/30 flex items-center justify-center text-red-600 dark:text-red-400 mx-auto mb-4">
+            <AlertCircle className="w-6 h-6" />
+          </div>
+          <h3 className="font-semibold text-gray-900 dark:text-white text-lg">Failed to Load Dashboard Data</h3>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-2 mb-6">
+            {fetchError}
+          </p>
+          <button
+            onClick={() => fetchStudents(searchTerm, true)}
+            className="glass-button px-6 py-2.5 flex items-center gap-2 mx-auto font-medium hover:shadow-lg hover:shadow-red-500/10"
+          >
+            <RotateCcw className="w-4 h-4" />
+            Retry
+          </button>
+        </div>
+      ) : loading ? (
         <LoadingSpinner message="Loading students..." />
       ) : (
         <div className="space-y-6">

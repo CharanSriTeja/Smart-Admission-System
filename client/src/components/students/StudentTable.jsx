@@ -16,15 +16,23 @@ function StudentTable({ students = [], onStatusChange, loading = false, sortConf
     if (onSort) onSort(key);
   };
 
-  const SortHeader = ({ label, sortKey }) => (
-    <button
-      onClick={() => handleSort(sortKey)}
-      className="flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
-    >
-      {label}
-      <ArrowUpDown className="w-3.5 h-3.5 opacity-50" />
-    </button>
-  );
+  const SortHeader = ({ label, sortKey }) => {
+    const isActive = sortConfig?.key === sortKey;
+    const isDesc = isActive && sortConfig?.direction === 'desc';
+    return (
+      <button
+        onClick={() => handleSort(sortKey)}
+        className={`flex items-center gap-1 text-xs font-semibold uppercase tracking-wider transition-colors ${
+          isActive
+            ? 'text-primary-600 dark:text-primary-400 font-bold'
+            : 'text-gray-500 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400'
+        }`}
+      >
+        {label}
+        <ArrowUpDown className={`w-3.5 h-3.5 transition-transform duration-200 ${isActive ? 'opacity-100 text-primary-500' : 'opacity-40'} ${isDesc ? 'rotate-180' : ''}`} />
+      </button>
+    );
+  };
 
   if (!students.length && !loading) {
     return (
@@ -50,7 +58,7 @@ function StudentTable({ students = [], onStatusChange, loading = false, sortConf
                 <span className="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">S.No</span>
               </th>
               <th className="text-left px-4 py-3.5">
-                <SortHeader label="Hall Ticket" sortKey="hallTicket" />
+                <SortHeader label="Hall Ticket" sortKey="hallTicketNumber" />
               </th>
               <th className="text-left px-4 py-3.5">
                 <SortHeader label="Name" sortKey="name" />
@@ -175,7 +183,7 @@ function StudentTable({ students = [], onStatusChange, loading = false, sortConf
                   <td className="px-4 py-3 text-center">
                     <button
                       onClick={() => navigate(`/students/${student._id || student.id}`)}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-primary-600 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors opacity-0 group-hover:opacity-100"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-primary-600 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors"
                     >
                       <Eye className="w-3.5 h-3.5" />
                       View

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { LayoutGrid, List, ChevronLeft, ChevronRight, FileSpreadsheet, FileText } from 'lucide-react';
+import { LayoutGrid, List, ChevronLeft, ChevronRight, FileSpreadsheet, FileText, AlertCircle, RotateCcw } from 'lucide-react';
 import DashboardLayout from '../components/common/DashboardLayout';
 import StudentTable from '../components/students/StudentTable';
 import StudentCard from '../components/students/StudentCard';
@@ -24,7 +24,9 @@ function StudentsPage() {
 
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState(null);
   const [viewMode, setViewMode] = useState('table');
+  const [sortConfig, setSortConfig] = useState({ key: '', direction: '' });
   const [pagination, setPagination] = useState({
     page: 1,
     limit: 10,
@@ -47,18 +49,25 @@ function StudentsPage() {
     }
   }, [user]);
 
-  const fetchStudents = useCallback(async (params = {}) => {
+  const fetchStudents = useCallback(async (params = {}, showSpinner = true) => {
     try {
-      setLoading(true);
+      if (showSpinner) setLoading(true);
+      setFetchError(null);
+      const sortParam = sortConfig.key
+        ? (sortConfig.direction === 'desc' ? `-${sortConfig.key}` : sortConfig.key)
+        : undefined;
+
       const queryParams = {
         page: pagination.page,
         limit: pagination.limit,
+        sort: sortParam,
         ...filters,
         ...params,
       };
       if (queryParams.status === 'all') delete queryParams.status;
       if (!queryParams.department) delete queryParams.department;
       if (!queryParams.search) delete queryParams.search;
+      if (!queryParams.sort) delete queryParams.sort;
 
       const res = await getStudents(queryParams);
       const data = res.data;
@@ -78,11 +87,20 @@ function StudentsPage() {
       }
     } catch (error) {
       console.error('Error fetching students:', error);
-      addToast('error', 'Failed to load students');
+      setFetchError(error.message || 'Failed to fetch student directory');
+      addToast('error', error.message || 'Failed to load students');
     } finally {
-      setLoading(false);
+      if (showSpinner) setLoading(false);
     }
-  }, [pagination.page, pagination.limit, filters, addToast]);
+  }, [pagination.page, pagination.limit, filters, sortConfig.key, sortConfig.direction, addToast]);
+
+  const handleSort = (key) => {
+    setSortConfig(prev => {
+      const direction = prev.key === key && prev.direction === 'asc' ? 'desc' : 'asc';
+      return { key, direction };
+    });
+    setPagination(prev => ({ ...prev, page: 1 }));
+  };
 
   useEffect(() => {
     fetchStudents();
@@ -100,7 +118,7 @@ function StudentsPage() {
       );
     };
     const handleRefresh = () => {
-      fetchStudents();
+      fetchStudents({}, false);
     };
 
     socket.on('student:updated', handleUpdate);
@@ -262,7 +280,7 @@ function StudentsPage() {
               <button
                 onClick={handleExportStudentsExcel}
                 title="Export Student Details (Excel)"
-                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 text-sm font-medium hover:bg-indigo-100 dark:hover:bg-indigo-900/30 transition-colors"
+                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 text-sm font-medium hover:bg-emerald-100 dark:hover:bg-emerald-900/30 transition-colors"
               >
                 <FileSpreadsheet className="w-4 h-4" />
                 <span className="hidden sm:inline">Export Excel</span>
@@ -270,7 +288,7 @@ function StudentsPage() {
               <button
                 onClick={handleExportStudentsPDF}
                 title="Export Student Details (PDF)"
-                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-violet-50 dark:bg-violet-900/20 text-violet-600 dark:text-violet-400 text-sm font-medium hover:bg-violet-100 dark:hover:bg-violet-900/30 transition-colors"
+                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-sm font-medium hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors"
               >
                 <FileText className="w-4 h-4" />
                 <span className="hidden sm:inline">Export PDF</span>
@@ -310,7 +328,24 @@ function StudentsPage() {
       </div>
 
         {/* Content */}
-        {loading ? (
+        {fetchError ? (
+          <div className="glass-card p-12 text-center border-l-4 border-l-red-500 max-w-xl mx-auto my-6 animate-scale-in">
+            <div className="w-12 h-12 rounded-xl bg-red-100 dark:bg-red-950/30 flex items-center justify-center text-red-600 dark:text-red-400 mx-auto mb-4">
+              <AlertCircle className="w-6 h-6" />
+            </div>
+            <h3 className="font-semibold text-gray-900 dark:text-white text-lg">Failed to Load Students</h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-2 mb-6">
+              {fetchError}
+            </p>
+            <button
+              onClick={() => fetchStudents()}
+              className="glass-button px-6 py-2.5 flex items-center gap-2 mx-auto font-medium hover:shadow-lg hover:shadow-red-500/10"
+            >
+              <RotateCcw className="w-4 h-4" />
+              Retry Fetching
+            </button>
+          </div>
+        ) : loading ? (
           viewMode === 'table' ? (
             <div className="glass-card p-4 space-y-3">
               {Array.from({ length: 5 }).map((_, i) => (
@@ -325,7 +360,12 @@ function StudentsPage() {
             </div>
           )
         ) : viewMode === 'table' ? (
-          <StudentTable students={students} onStatusChange={handleStatusChange} />
+          <StudentTable
+            students={students}
+            onStatusChange={handleStatusChange}
+            sortConfig={sortConfig}
+            onSort={handleSort}
+          />
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {students.length > 0 ? (

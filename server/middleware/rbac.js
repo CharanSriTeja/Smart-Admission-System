@@ -13,6 +13,7 @@
  *   router.get('/admin', auth, authorize('HOD'), adminHandler);
  */
 const authorize = (...roles) => {
+  const allowedRoles = roles.map((r) => r.toUpperCase());
   return (req, res, next) => {
     if (!req.user) {
       return res.status(401).json({
@@ -21,7 +22,7 @@ const authorize = (...roles) => {
       });
     }
 
-    if (!roles.includes(req.user.role)) {
+    if (!req.user.role || !allowedRoles.includes(req.user.role.toUpperCase())) {
       return res.status(403).json({
         success: false,
         message: `Access denied. Role '${req.user.role}' is not authorized for this resource.`,
