@@ -92,22 +92,29 @@ console.log('Generated sample-students.csv');
 // 3. Generate PDF
 async function generatePDF() {
   const pdfDoc = await PDFDocument.create();
-  const page = pdfDoc.addPage([600, 450]);
+  const page = pdfDoc.addPage([950, 500]);
   const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
   const boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
   
   // Header text (multiple lines on top of the PDF as requested)
-  page.drawText('SRKR Engineering College', { x: 50, y: 400, size: 16, font: boldFont, color: rgb(0.1, 0.2, 0.5) });
-  page.drawText('Student Admission List — Academic Year 2026', { x: 50, y: 380, size: 12, font, color: rgb(0.3, 0.3, 0.3) });
-  page.drawText('Generated on: ' + new Date().toLocaleDateString(), { x: 50, y: 365, size: 9, font, color: rgb(0.5, 0.5, 0.5) });
-  page.drawText('---------------------------------------------------------------------------------------------', { x: 50, y: 350, size: 10, font, color: rgb(0.7, 0.7, 0.7) });
+  page.drawText('SRKR Engineering College', { x: 40, y: 450, size: 16, font: boldFont, color: rgb(0.1, 0.2, 0.5) });
+  page.drawText('Student Admission List — Academic Year 2026', { x: 40, y: 430, size: 12, font, color: rgb(0.3, 0.3, 0.3) });
+  page.drawText('Generated on: ' + new Date().toLocaleDateString(), { x: 40, y: 415, size: 9, font, color: rgb(0.5, 0.5, 0.5) });
+  
+  // Draw divider line under title block
+  page.drawLine({
+    start: { x: 40, y: 400 },
+    end: { x: 910, y: 400 },
+    thickness: 1,
+    color: rgb(0.7, 0.7, 0.7)
+  });
 
   // Table Headers (not first line!)
-  const headers = ['HT No', 'Name', 'Rank', 'Branch', 'Mobile'];
-  let currentY = 325;
+  const headers = ['HT No', 'Name', 'Rank', 'Branch', 'Student Phone', 'Parent Phone', 'Email', 'Category', 'Gender', 'Region'];
+  let currentY = 375;
   
   // Align at specific horizontal coordinate tabs to simulate columns
-  const tabStops = [50, 140, 260, 320, 390];
+  const tabStops = [40, 120, 230, 280, 340, 430, 520, 690, 760, 820];
   
   headers.forEach((header, idx) => {
     page.drawText(header, { x: tabStops[idx], y: currentY, size: 10, font: boldFont, color: rgb(0.1, 0.1, 0.1) });
@@ -115,24 +122,34 @@ async function generatePDF() {
   
   // Draw divider line under headers
   currentY -= 8;
-  page.drawText('---------------------------------------------------------------------------------------------', { x: 50, y: currentY, size: 10, font, color: rgb(0.7, 0.7, 0.7) });
-  currentY -= 18;
+  page.drawLine({
+    start: { x: 40, y: currentY },
+    end: { x: 910, y: currentY },
+    thickness: 1,
+    color: rgb(0.7, 0.7, 0.7)
+  });
+  currentY -= 20;
 
   // Draw rows
   sampleData.forEach((student) => {
     const rowValues = [
-      student.hallTicketNumber,
-      student.name,
-      String(student.rank),
-      student.department,
-      student.studentPhone
+      student.hallTicketNumber || '',
+      student.name || '',
+      String(student.rank || ''),
+      student.department || '',
+      student.studentPhone || '',
+      student.parentPhone || '',
+      student.email || '',
+      student.category || '',
+      student.gender || '',
+      student.region || ''
     ];
     
     rowValues.forEach((val, idx) => {
       page.drawText(val, { x: tabStops[idx], y: currentY, size: 9, font, color: rgb(0.2, 0.2, 0.2) });
     });
     
-    currentY -= 18;
+    currentY -= 20;
   });
   
   const pdfBytes = await pdfDoc.save();
